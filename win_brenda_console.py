@@ -16,7 +16,7 @@ import sys
 thisver = 201608162155
 
 def spacetime ():
-    time.sleep(2)
+    time.sleep(10)
     clear()
 
 def menerror():
