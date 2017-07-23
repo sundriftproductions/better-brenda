@@ -1067,7 +1067,7 @@ def instancemenu ():
         print
         print
         conf = read_conf_values()
-        instchoice = raw_input(' Choose frame option: ')
+        instchoice = raw_input(' Choose instance option: ')
 
         if instchoice == 'm':
             break
