@@ -476,6 +476,7 @@ def reviewjob():
             print " %-25s %-15s" % ('Tile grid',conf.g+x+conf.g)
         print " %-25s %-15s" % ('Frame format',conf.j)
         print " %-25s %-15s" % ('Instance type',conf.a)
+        print " %-25s %-15s" % ('Availability zone',conf.m)
         print " %-25s %-15s" % ('Number of instances',conf.h)
         print " %-25s %-15s" % ('Bid per instance',conf.i)
         print " %-25s %-15s" % ('Cost per hour',math)
@@ -609,7 +610,7 @@ def instance():
             a = instype
             i = price
             m = zonetype
-            newconfig = conf.a_nm+a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+h+conf.z+conf.i_nm+i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+            newconfig = conf.a_nm+a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+h+conf.z+conf.i_nm+i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+m
             confwrite(newconfig)
             print
             print ' Instance information has been changed to'
