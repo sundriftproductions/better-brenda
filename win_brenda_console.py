@@ -16,7 +16,7 @@ import sys
 thisver = 201608162155
 
 def spacetime ():
-    time.sleep(10)
+    time.sleep(6)
     clear()
 
 def menerror():
@@ -284,23 +284,28 @@ def nproj ():
 
             projbucketname = urlparse.urlsplit(b).netloc
             projbucketpath = 's3://'+projbucketname
+            print
+            print "projbucketpath: " + projbucketpath
 
             #changes to s3cmd working directory
+            print
+            print "Changing to s3cmd working directory: " + ps
             os.chdir(ps)
 
 
             #deletes all old project files
             print
+            print "Deleting all project files"
+            print 'python s3cmd del -r -f '+projbucketpath
             status = os.system('python s3cmd del -r -f '+projbucketpath)
-            clear()
 
             #deletes all old frames
             print
+            print "Deleting all old frames"
+            print 'python s3cmd del -r -f '+d
             status = os.system('python s3cmd del -r -f '+d)
-            clear()
             print
             print " Files in project and frame buckets have been deleted"
-            spacetime()
 
             #zips and moves selected file to s3 bucket
             print
@@ -308,6 +313,7 @@ def nproj ():
             print
             print " This may take a while"
             print
+            print "Changing to this directory: " + projfilepath
             os.chdir(projfilepath)
             zipper = '.zip'
             projfilenamestripped = os.path.splitext(projfilename)[0]
@@ -315,14 +321,22 @@ def nproj ():
             output = zipfile.ZipFile(zippedprojfilename, 'w')
             output.write(projfilename)
             output.close()
+
+            print zippedprojfilename + " has been created"
+            exit = raw_input(' Press Enter to continue ') # // TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            print
+            print "Changing to s3cmd working directory: " + ps
             os.chdir(ps)
-            os.system('python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 '+projfilepath+sl+zippedprojfilename+sb+projbucketpath)
-            clear()
+            print
+            print 'python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+sl+zippedprojfilename+'" '+sb+projbucketpath
+            os.system('python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+sl+zippedprojfilename+'" '+sb+projbucketpath)
             print
             print ' Project file has been uploaded'
-            spacetime()
 
             #deletes zipped file from users pc
+            print
+            print "Deleting zipped file from user's PC"
             os.chdir(projfilepath)
             os.remove(zippedprojfilename)
 
@@ -336,7 +350,7 @@ def nproj ():
             file.close()
             #status = os.chdir(bm)
             resetworkqueue()
-            spacetime()
+            clear()
             break
         if nprojconf=='n':
             clear()
@@ -393,7 +407,7 @@ def prices():
     spotrequest = py+br+i+spinstype+sb+spotprice
     status = os.system(spotrequest)
     print
-    exit = raw_input(' Enter any key to return ')
+    exit = raw_input(' Press Enter to continue ')
 
 def reviewjob():
     while True:
@@ -461,37 +475,33 @@ def reviewjob():
                     queue = py+bw+t+sft+strt+conf.k+sb+end+conf.l+sb+xsize+conf.g+sb+ysize+conf.g+sb+pu
 
                 status = os.system(queue)
+                print '\n'
 
                 if status == 1:
-                    print '\n'
                     print ' There was an error building work queue'
-                    spacetime()
+                    exit = raw_input(' Press Enter to continue ')
                     break
 
                 if status == 0:
-                    clear()
-                    print '\n'
                     print ' Work queue has been built'
-                    spacetime()
+                    print
                     instrequest = py+br+i+conf.a+sb+n+conf.h+sb+p+conf.i+sb+spot
-                    clear()
                     print instrequest
+                    print '\n'
                     status = os.system(instrequest)
                     print
                     print
                     if status == 1:
                         print '\n'
                         print ' There was an error initiating Instances. Try a C3 instance type for this AMI'
-                        spacetime()
                         resetworkqueue()
-                        print
-                        print
-                        exit = raw_input(' Enter any key to return ')
                         break
                     if status == 0:
                         print '\n'
                         print ' Instance/s have been initiated'
-                        spacetime()
+                        print
+                        print
+                        exit = raw_input(' Press Enter to continue ')
                         break
 
 
@@ -622,42 +632,42 @@ def monmenu ():
             status = os.system(py+bw+st)      
             print
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
         if montask=='r':  
             clear()
             print
             os.system(py+br+st)     
             print
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
         if montask=='u':           
             clear()
             print
             os.system(py+bt+sh+ut)      
             print
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
         if montask=='t':           
             clear()
             print
             os.system(py+bt+sh+tl)      
             print
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
         if montask=='f':           
             clear()
             print
             os.system(py+bt+pf)    
             print  
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
         if montask=='c':           
             clear()
             print
             os.system(py+bt+sh+tc)      
             print
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
         if montask=='p':           
             clear()
             while True:
@@ -698,7 +708,7 @@ def monmenu ():
                         close = py+bt+t+smlt+uptime+sb+pru+inprunet
                     os.system(close)
                     print
-                    exit = raw_input(' Enter any key to return ')
+                    exit = raw_input(' Press Enter to continue ')
                     clear()
                     break                
                 if trans=='n':
@@ -712,7 +722,7 @@ def monmenu ():
                         close2 = py+bt+t+pru+inprune
                     os.system(close2)
                     print
-                    exit = raw_input(' Enter any key to return ')
+                    exit = raw_input(' Press Enter to continue ')
                     clear()
                     break
 
@@ -774,7 +784,7 @@ def downmenu ():
             print " Frames have been downloaded"
             print
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
             status = os.chdir(bm)
         if downtask =='r': 
             clear()
@@ -842,10 +852,7 @@ def cancelmenu ():
         if canceltask=='r':  
             clear()
             resetworkqueue()
-            print
-            print
-            exit = raw_input(' Enter any key to return ')
-
+            clear()
 
         if canceltask=='s':  
             clear()
@@ -862,7 +869,7 @@ def cancelmenu ():
                 print " There was a problem, please try an alternative method" 
             print
             print
-            exit = raw_input(' Enter any key to return ')
+            exit = raw_input(' Press Enter to continue ')
       
         if canceltask=='c':  
             clear()
@@ -879,8 +886,8 @@ def cancelmenu ():
                 print " There was a problem, please try an alternative method"
             print
             print
-            exit = raw_input(' Enter any key to return ')
-    
+            exit = raw_input(' Press Enter to continue ')
+
         if canceltask=='e':
             clear()
             print
@@ -947,16 +954,17 @@ def cancelmenu ():
 
                     #deletes all old project files
                     print
+                    print 'python s3cmd del -r -f '+projbucketpath
                     status = os.system('python s3cmd del -r -f '+projbucketpath)
-                    clear()
 
                     #deletes all old frames
                     print
+                    print 'python s3cmd del -r -f '+d
                     status = os.system('python s3cmd del -r -f '+d)
-                    clear()
                     print
                     print " Files in project and frame buckets have been deleted"
-                    spacetime()
+                    print
+                    exit = raw_input(' Press Enter to continue ')
 
 
 
@@ -1002,6 +1010,11 @@ def confadd ():
     from os.path import expanduser
     home = expanduser("~")
     os.chdir(home)
+
+    print
+    print "Looking for config file here: " + home
+    print
+
     parser = ConfigParser.ConfigParser()
     parser.readfp(FakeSecHead(open('.brenda.conf')))
     fos = parser.has_option('asection', 'FRAME_OR_SUBFRAME')
@@ -1316,6 +1329,7 @@ def resetworkqueue():
         print
         print
         print " There was a problem resetting work queue, please try waiting 60 seconds"
+    exit = raw_input(' Press Enter to continue ')
     os.chdir(bm)
 
 
