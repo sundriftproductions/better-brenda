@@ -69,6 +69,7 @@ scf = '.s3cfg'
 brenda = 'brenda'
 q = '"'
 ff = '-F'
+zonebase = 'us-east-1' # TODO: This should be pulled from a config file or from a Brenda command response so it's not tied to a particular region
 
 sys.path.insert(0, bm+sl+brenda)
 import ami
@@ -286,6 +287,7 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
             j = parser.get('asection', 'FILE_TYPE')
             k = parser.get('asection', 'START_FRAME')
             l = parser.get('asection', 'END_FRAME')
+            m = parser.get('asection', 'AVAILABILITY_ZONE')
 
             #create new options
             a_nm = 'INSTANCE_TYPE='
@@ -300,6 +302,7 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
             j_nm = 'FILE_TYPE='
             k_nm = 'START_FRAME='
             l_nm = 'END_FRAME='
+            m_nm = 'AVAILABILITY_ZONE='
             z = '\n'
 
             projbucketname = urlparse.urlsplit(b).netloc
@@ -379,7 +382,7 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
             os.chdir(home)
             file = open(".brenda.conf", "w")
             b = projbucketpath+sl+zippedprojfilename
-            newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l
+            newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m
             file.write(newconfig)
             file.close()
             #status = os.chdir(bm)
@@ -556,6 +559,16 @@ def instance():
         inst = raw_input(' Which instance would you like to use? ')
         clear()
         print
+        print " a = " + zonebase + "a"
+        print " b = " + zonebase + "b"
+        print " c = " + zonebase + "c"
+        print " d = " + zonebase + "d"
+        print " e = " + zonebase + "e"
+        print " f = " + zonebase + "f"
+        print
+        zone = raw_input(' Which availability zone would you like to use? ')
+        clear()
+        print
         amount = raw_input(' How many instances would you like to initiate? ')
         clear()
         print
@@ -575,13 +588,16 @@ def instance():
             if inst == 'd':
                 instype = 'c3.2xlarge'
                 break
+
+        zonetype = zonebase + zone
+
         print
-        print " You are bidding for "+amount,"X"+sb+instype,"at a cost of $ "+price,"per instance."
+        print " You are bidding for "+amount,"X"+sb+instype,"in availability zone "+zonetype,"at a cost of $"+price,"per instance."
         print
         amountD = Decimal(amount)
         priceD = Decimal(price)
         math = (amountD*priceD)
-        print ' This will cost you $',math, 'per hour'
+        print ' This will cost you $'+ str(math), 'per hour'
         print
         print
         iconf = raw_input(' Are these values correct, y or n? ')  
@@ -592,12 +608,13 @@ def instance():
             h = amount
             a = instype
             i = price
-            newconfig = conf.a_nm+a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+h+conf.z+conf.i_nm+i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+            m = zonetype
+            newconfig = conf.a_nm+a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+h+conf.z+conf.i_nm+i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
             confwrite(newconfig)
             print
             print ' Instance information has been changed to'
             print
-            print ' '+h,'x '+a,'instances @ $'+i,'each per hour'
+            print ' '+h,'x '+a+' using availability zone '+m,'instances @ $'+i,'each per hour'
             spacetime()
             break
 
@@ -964,6 +981,7 @@ def cancelmenu ():
                     j = parser.get('asection', 'FILE_TYPE')
                     k = parser.get('asection', 'START_FRAME')
                     l = parser.get('asection', 'END_FRAME')
+                    m = parser.get('asection', 'AVAILABILITY_ZONE')
 
                     #create new options
                     a_nm = 'INSTANCE_TYPE='
@@ -978,6 +996,7 @@ def cancelmenu ():
                     j_nm = 'FILE_TYPE='
                     k_nm = 'START_FRAME='
                     l_nm = 'END_FRAME='
+                    m_nm = 'AVAILABILITY_ZONE='
                     z = '\n'
 
                     projbucketname = urlparse.urlsplit(b).netloc
@@ -1024,20 +1043,25 @@ def toolchange ():
 #This checks the version number and shows a notification if there is a newer version up on github
 def vercheck ():
     clear()
-    urllib.urlretrieve ("http://www.thegreyroompost.com/win_brenda/win_brenda.ini", "win_brenda.ini")
-    parser = SafeConfigParser()
-    parser.read('win_brenda.ini')
-    ghver = parser.get('versions', 'ghver')
-    os.remove('win_brenda.ini')
-    ghver = int(ghver)
-    if ghver > thisver:
-        print
-        print
-        print " UPDATED VERSION AVAILABLE"
-        print 
-        print " Check github"
-        print 
+    try:
+        urllib.urlretrieve ("http://www.thegreyroompost.com/win_brenda/win_brenda.ini", "win_brenda.ini")
+        parser = SafeConfigParser()
+        parser.read('win_brenda.ini')
+        ghver = parser.get('versions', 'ghver')
+        os.remove('win_brenda.ini')
+        ghver = int(ghver)
+        if ghver > thisver:
+            print
+            print
+            print " UPDATED VERSION AVAILABLE"
+            print
+            print " Check github"
+            print
+            spacetime()
+    except:
+        print "There was a problem setting up the application. Is this computer connected to the internet?"
         spacetime()
+        pass
 
 #This checks frame and subframe options in .conf file
 def confadd ():
@@ -1059,6 +1083,7 @@ def confadd ():
         c = parser.get('asection', 'WORK_QUEUE')
         d = parser.get('asection', 'RENDER_OUTPUT')
         e = parser.get('asection', 'DONE')
+        m = parser.get('asection', 'AVAILABILITY_ZONE')
         #new values
         f = 'frame'
         g = 'non'
@@ -1067,6 +1092,7 @@ def confadd ():
         j = 'png'
         k = '0'
         l = '0'
+
         #create new options
         a_nm = 'INSTANCE_TYPE='
         b_nm = 'BLENDER_PROJECT='
@@ -1080,9 +1106,10 @@ def confadd ():
         j_nm = 'FILE_TYPE='
         k_nm = 'START_FRAME='
         l_nm = 'END_FRAME='
+        m_nm = 'AVAILABILITY_ZONE='
         z = '\n'
         #write to file
-        newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l
+        newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m
         file = open(".brenda.conf", "w")
         file.write(newconfig)
         file.close()
@@ -1346,6 +1373,7 @@ class read_conf_values(object):
         self.j = parser.get('asection', 'FILE_TYPE')
         self.k = parser.get('asection', 'START_FRAME')
         self.l = parser.get('asection', 'END_FRAME')
+        self.m = parser.get('asection', 'AVAILABILITY_ZONE')
         #create new options
         self.a_nm = 'INSTANCE_TYPE='
         self.b_nm = 'BLENDER_PROJECT='
@@ -1359,6 +1387,7 @@ class read_conf_values(object):
         self.j_nm = 'FILE_TYPE='
         self.k_nm = 'START_FRAME='
         self.l_nm = 'END_FRAME='
+        self.m_nm = 'AVAILABILITY_ZONE='
         self.z = '\n'
         os.chdir(bm)
 
