@@ -16,7 +16,7 @@ import sys
 thisver = 201608162155
 
 def spacetime ():
-    time.sleep(6)
+    time.sleep(3)
     clear()
 
 def menerror():
@@ -218,32 +218,52 @@ AMI_ID="""
                 break
 
 def nproj ():
+    clear()
+    print
+    print " Select your Blender project file (texture files etc. must be packed)..."
+    time.sleep(1)
+    root = Tk()
+    root.withdraw()
+    projfile = askopenfilename(parent=root, title='Select your packed Blender project file')
+    root.destroy()
+    projfilename = os.path.basename(os.path.abspath(projfile))
+    projfilepath = os.path.dirname(os.path.abspath(projfile))
+    uploadproject(projfilename, projfilepath, False)
+
+def nprojexternal():
+    clear()
+    print
+    print ' Select your Blender project file. External files must be the directory "/artwork/in project/" and your project must use relative file paths.'
+    time.sleep(1)
+    root = Tk()
+    root.withdraw()
+    projfile = askopenfilename(parent=root, title='Select your Blender project file')
+    root.destroy()
+    projfilename = os.path.basename(os.path.abspath(projfile))
+    projfilepath = os.path.dirname(os.path.abspath(projfile))
+    uploadproject(projfilename, projfilepath, True)
+
+def uploadproject(projfilename, projfilepath, hasexternalfiles):
     while True:
-        print
-        print " Select your Blender project file (texture files etc. must be packed)..."
-        time.sleep(1)
-        root = Tk()
-        root.withdraw()
-        projfile = askopenfilename(parent=root, title='Select your packed Blender project file')
-        root.destroy()
         clear()
-        projfilename = os.path.basename(os.path.abspath(projfile))
-        projfilepath = os.path.dirname(os.path.abspath(projfile))
         print
         print " ***WARNING***"
         print
         print
-        print " This will..." 
+        print " This will..."
         print
         print
         print " 1. delete all files in your frame and project buckets"
         print
-        print " 2. zip and upload "+projfilename
+        if (hasexternalfiles == True):
+            print " 2. zip and upload "+projfilename+' as well as any files in the "artwork/in project" directory'
+        else:
+            print " 2. zip and upload "+projfilename
         print
         print " 3. reset work queue"
         print
         print
-        nprojconf = raw_input(' Do you want to continue, type y or n? ') 
+        nprojconf = raw_input(' Do you want to continue, type y or n? ')
         if nprojconf=='y':
             clear()
 
@@ -318,13 +338,27 @@ def nproj ():
             zipper = '.zip'
             projfilenamestripped = os.path.splitext(projfilename)[0]
             zippedprojfilename = projfilenamestripped+zipper
-            output = zipfile.ZipFile(zippedprojfilename, 'w')
-            output.write(projfilename)
-            output.close()
+
+            if (hasexternalfiles == False):
+                output = zipfile.ZipFile(zippedprojfilename, 'w')
+                output.write(projfilename)
+                output.close()
+            else:
+                # Grab everything in the relative "artwork/in project" directory and zip it up.
+                source_dir = projfilepath + "\\artwork\\in project\\"
+                relroot = os.path.abspath(os.path.join(source_dir, os.pardir))
+                with zipfile.ZipFile(zippedprojfilename, "w", zipfile.ZIP_DEFLATED) as output:
+                    output.write(projfilename)
+                    for root, dirs, files in os.walk(source_dir):
+                        # add directory (needed for empty dirs)
+                        output.write(root, "artwork\\" + os.path.relpath(root, relroot))
+                        for file in files:
+                            filename = os.path.join(root, file)
+                            if os.path.isfile(filename): # regular files only
+                                arcname = os.path.join("artwork\\" + os.path.relpath(root, relroot), file)
+                                output.write(filename, arcname)
 
             print zippedprojfilename + " has been created"
-            exit = raw_input(' Press Enter to continue ') # // TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
             print
             print "Changing to s3cmd working directory: " + ps
             os.chdir(ps)
@@ -590,7 +624,7 @@ def setupmenu ():
             amis()
         if setuptask=='p':
             clear()
-            nproj()
+            projectmenu()
         if setuptask=='f':
             clear()
             frames()
@@ -1078,6 +1112,28 @@ def instancemenu ():
         if instchoice == 'c':
             instance()
 
+def projectmenu():
+    while True:
+        clear()
+        print
+        print ' m = Go to previous menu'
+        print
+        print
+        print ' b = Upload .blend file'
+        print ' e = Upload .blend file plus external dependency files'
+        print
+        print
+        conf = read_conf_values()
+        instchoice = raw_input(' Choose project option: ')
+
+        if instchoice == 'm':
+            break
+
+        if instchoice == 'b':
+            nproj()
+
+        if instchoice == 'e':
+            nprojexternal()
 
 
 
