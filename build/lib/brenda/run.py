@@ -69,11 +69,8 @@ def spot(opts, conf):
         user_data = script
     ssh_key_name = conf.get("SSH_KEY_NAME", "brenda")
     sec_groups = (conf.get("SECURITY_GROUP", "brenda"),)
-    zone = { 
-        'tenancy': 'default',
-        'group_name': None,
-        'availability_zone': 'us-east-1a',
-        }
+    zone = brenda_availability_zone(opts, conf)
+
     run_args = {
         'image_id'      : ami_id,
         'price'         : price,
@@ -84,7 +81,7 @@ def spot(opts, conf):
         'key_name'      : ssh_key_name,
         'security_groups' : sec_groups,
         'block_device_map' : bdm,
-        'placement'        : 'us-east-1a',
+        'placement'        : zone,
         }
 
     print "----------------------------"
@@ -305,3 +302,6 @@ def print_script(opts, conf, script):
 
 def brenda_instance_type(opts, conf):
     return utils.get_opt(opts.instance_type, conf, 'INSTANCE_TYPE', default="m2.xlarge")
+
+def brenda_availability_zone(opts, conf):
+    return utils.get_opt(opts.instance_type, conf, 'AVAILABILITY_ZONE', default="us-east-1a")
