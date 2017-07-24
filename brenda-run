@@ -61,6 +61,7 @@ Optional config vars:
            that already has Brenda pre-installed%s.
   EC2_REGION : EC2 region name, defaults to US standard (optional).
   INSTANCE_TYPE : EC2 instance type.
+  AVAILABILITY_ZONE : EC2 availability zone.
   BID_PRICE : maximum spot market bid price for EC2 instance in dollars per
               hour.  Must be specified on the command line, if not specified
               as a config variable.
@@ -131,6 +132,9 @@ Examples:
 
     parser.add_option("-d", "--dry-run", action="store_true", dest="dry_run",
                       help="show what would be done without actually doing it")
+
+    parser.add_option("-z", "--zone", dest="availability_zone",
+                      help="EC2 availability zone")
 
     # Get command line arguments...
     ( opts, args ) = parser.parse_args()

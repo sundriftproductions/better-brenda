@@ -37,6 +37,7 @@ sb = ' '
 i = '-i '
 n = '-N '
 p = '-p '
+zFlag = '-z '
 spot = 'spot'
 spotprice = 'price'
 
@@ -412,7 +413,7 @@ def workq ():
             #new values
             k = sframe
             l = eframe
-            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+k+conf.z+conf.l_nm+l
+            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+k+conf.z+conf.l_nm+l+conf.z+conf.m_nm+conf.m
             confwrite(newconfig)
             print
             print ' Frame range changed ( '+k,'- '+l,')'
@@ -523,10 +524,14 @@ def reviewjob():
                 if status == 0:
                     print ' Work queue has been built'
                     print
-                    instrequest = py+br+i+conf.a+sb+n+conf.h+sb+p+conf.i+sb+spot
+                    instrequest = py+br+i+conf.a+sb+n+conf.h+sb+p+conf.i+sb+spot+' '+zFlag+conf.m
                     print instrequest
                     print '\n'
+                    junk = raw_input(' PRESS KEY ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                     status = os.system(instrequest)
+
+                    junk = raw_input(' PRESS KEY ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     print
                     print
                     if status == 1:
@@ -1193,7 +1198,7 @@ def frames ():
             f = 'frame'
             g = 'non'
             #write to file
-            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
             confwrite(newconfig)
             print
             print ' Changed to whole frame rendering'
@@ -1216,7 +1221,7 @@ def frames ():
                     f = 'subframe'
                     g = '8'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     print
                     print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
@@ -1228,7 +1233,7 @@ def frames ():
                     f = 'subframe'
                     g = '4'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     print
                     print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
@@ -1239,7 +1244,7 @@ def frames ():
                     f = 'subframe'
                     g = '2'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     print
                     print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
@@ -1265,7 +1270,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     clear()
                     print
@@ -1279,7 +1284,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     clear()
                     print
@@ -1293,7 +1298,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)                
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     clear()
                     print
@@ -1307,7 +1312,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     clear()
                     print
@@ -1321,7 +1326,7 @@ def frames ():
                     #new values
                     j = 'specifiedinfile'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
                     confwrite(newconfig)
                     clear()
                     print

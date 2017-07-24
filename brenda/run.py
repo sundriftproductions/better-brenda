@@ -89,6 +89,7 @@ def spot(opts, conf):
     print "Max bid price", price
     print "Request type:", reqtype
     print "Instance type:", itype
+    print "Availability zone:", zone
     print "Instance count:", opts.n_instances
     if snap_description:
         print "Project EBS snapshot:", snap_description
@@ -304,4 +305,4 @@ def brenda_instance_type(opts, conf):
     return utils.get_opt(opts.instance_type, conf, 'INSTANCE_TYPE', default="m2.xlarge")
 
 def brenda_availability_zone(opts, conf):
-    return utils.get_opt(opts.instance_type, conf, 'AVAILABILITY_ZONE', default="us-east-1a")
+    return utils.get_opt(opts.availability_zone, conf, 'AVAILABILITY_ZONE', default="us-east-1a")
