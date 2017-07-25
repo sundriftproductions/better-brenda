@@ -527,11 +527,7 @@ def reviewjob():
                     instrequest = py+br+i+conf.a+sb+n+conf.h+sb+p+conf.i+sb+spot+' '+zFlag+conf.m
                     print instrequest
                     print '\n'
-                    junk = raw_input(' PRESS KEY ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
                     status = os.system(instrequest)
-
-                    junk = raw_input(' PRESS KEY ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     print
                     print
                     if status == 1:
