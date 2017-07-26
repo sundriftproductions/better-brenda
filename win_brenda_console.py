@@ -230,12 +230,12 @@ def nproj ():
     root.destroy()
     projfilename = os.path.basename(os.path.abspath(projfile))
     projfilepath = os.path.dirname(os.path.abspath(projfile))
-    uploadproject(projfilename, projfilepath, False)
+    uploadproject(projfilename, projfilepath, 0)
 
 def nprojexternal():
     clear()
     print
-    print ' Select your Blender project file. External files must be the directory "/artwork/in project/" and your project must use relative file paths.'
+    print ' Select your Blender project file. External artwork files must be the directory "/artwork/in project/" and your project must use relative file paths.'
     time.sleep(1)
     root = Tk()
     root.withdraw()
@@ -243,9 +243,26 @@ def nprojexternal():
     root.destroy()
     projfilename = os.path.basename(os.path.abspath(projfile))
     projfilepath = os.path.dirname(os.path.abspath(projfile))
-    uploadproject(projfilename, projfilepath, True)
+    uploadproject(projfilename, projfilepath, 1)
 
-def uploadproject(projfilename, projfilepath, hasexternalfiles):
+def nprojzipped():
+    clear()
+    print
+    print ' Select your zipped archive. Your zipped archive must have the same name as your main .blend file and your project must use relative file paths.'
+    time.sleep(1)
+    root = Tk()
+    root.withdraw()
+    projfile = askopenfilename(parent=root, title='Select your zipped archive')
+    root.destroy()
+    projfilename = os.path.basename(os.path.abspath(projfile))
+    projfilepath = os.path.dirname(os.path.abspath(projfile))
+    uploadproject(projfilename, projfilepath, 2)
+
+
+def uploadproject(projfilename, projfilepath, uploadtype):
+    # uploadtype = 0: Uploading just a project file
+    #            = 1: Uploading a project file and we will include everything in the "/artwork/in project" directory
+    #            = 2: Uploading an already zipped archive
     while True:
         clear()
         print
@@ -257,8 +274,10 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
         print
         print " 1. delete all files in your frame and project buckets"
         print
-        if (hasexternalfiles == True):
+        if (uploadtype == 1):
             print " 2. zip and upload "+projfilename+' as well as any files in the "artwork/in project" directory'
+        elif (uploadtype == 2):
+            print " 2. upload the already-zipped archive "+projfilename
         else:
             print " 2. zip and upload "+projfilename
         print
@@ -333,7 +352,10 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
 
             #zips and moves selected file to s3 bucket
             print
-            print " Zipping and uploading project file..."
+            if (uploadtype == 2):
+                print " Uploading project file..."
+            else:
+                print " Zipping and uploading project file..."
             print
             print " This may take a while"
             print
@@ -343,11 +365,7 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
             projfilenamestripped = os.path.splitext(projfilename)[0]
             zippedprojfilename = projfilenamestripped+zipper
 
-            if (hasexternalfiles == False):
-                output = zipfile.ZipFile(zippedprojfilename, 'w')
-                output.write(projfilename)
-                output.close()
-            else:
+            if (uploadtype == 1):
                 # Grab everything in the relative "artwork/in project" directory and zip it up.
                 source_dir = projfilepath + "\\artwork\\in project\\"
                 relroot = os.path.abspath(os.path.join(source_dir, os.pardir))
@@ -361,9 +379,15 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
                             if os.path.isfile(filename): # regular files only
                                 arcname = os.path.join("artwork\\" + os.path.relpath(root, relroot), file)
                                 output.write(filename, arcname)
+                print zippedprojfilename + " has been created"
+                print
+            elif (uploadtype == 0):
+                output = zipfile.ZipFile(zippedprojfilename, 'w')
+                output.write(projfilename)
+                output.close()
+                print zippedprojfilename + " has been created"
+                print
 
-            print zippedprojfilename + " has been created"
-            print
             print "Changing to s3cmd working directory: " + ps
             os.chdir(ps)
             print
@@ -373,10 +397,11 @@ def uploadproject(projfilename, projfilepath, hasexternalfiles):
             print ' Project file has been uploaded'
 
             #deletes zipped file from users pc
-            print
-            print "Deleting zipped file from user's PC"
-            os.chdir(projfilepath)
-            os.remove(zippedprojfilename)
+            if (uploadtype != 2):
+                print
+                print "Deleting zipped file from user's PC"
+                os.chdir(projfilepath)
+                os.remove(zippedprojfilename)
 
             #changes reference in config file
             home = expanduser("~")
@@ -1149,7 +1174,8 @@ def projectmenu():
         print
         print
         print ' b = Upload .blend file'
-        print ' e = Upload .blend file plus external dependency files'
+        print ' e = Upload .blend file plus external artwork files'
+        print ' z = Upload already zipped archive'
         print
         print
         conf = read_conf_values()
@@ -1164,6 +1190,8 @@ def projectmenu():
         if instchoice == 'e':
             nprojexternal()
 
+        if instchoice == 'z':
+            nprojzipped()
 
 
 def frames ():
