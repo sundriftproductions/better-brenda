@@ -1361,7 +1361,7 @@ def frames ():
 
 def frametemplateformat(newformat):
     os.chdir(bm)
-    fpart = 'blender -b *.blend'
+    fpart = 'blender -b *.blend --enable-autoexec'
     lpart = '-o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a'
     file = open("frame-template", "w")
     file.write(fpart+newformat+lpart)
@@ -1377,7 +1377,7 @@ bpy.context.scene.render.border_min_y = $SF_MIN_Y
 bpy.context.scene.render.border_max_y = $SF_MAX_Y
 bpy.context.scene.render.use_border = True
 EOF
-blender -b *.blend -P subframe.py"""
+blender -b *.blend --enable-autoexec -P subframe.py"""
     lpart = """-o $OUTDIR/frame_######_X-$SF_MIN_X-$SF_MAX_X-Y-$SF_MIN_Y-$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a"""
     file = open("subframe-template", "w")
     file.write(fpart+newformat+lpart)
