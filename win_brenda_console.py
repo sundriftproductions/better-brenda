@@ -1358,7 +1358,9 @@ def frames ():
                     spacetime()
                     break
 
-
+# Note: Added the flag "--enable-autoexec" to the frame and subframe template.
+#       This is the equivalent of going into User Preferences, File and checking "Auto Execution: Auto Run Python Scripts".
+#       If this option is not turned on and you are using BlenRig, the armature won't run correctly (FK arms and forearms will stay completely straight).
 def frametemplateformat(newformat):
     os.chdir(bm)
     fpart = 'blender -b *.blend --enable-autoexec'
