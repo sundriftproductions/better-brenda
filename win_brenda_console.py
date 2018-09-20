@@ -125,74 +125,24 @@ def setupmenuoptions ():
 
 def amis ():
     clear()
-    urllib.urlretrieve ("http://www.thegreyroompost.com/win_brenda/win_brenda.ini", "win_brenda.ini")
-    parser = SafeConfigParser()
-    parser.read('win_brenda.ini')
-    adesc = parser.get('amis', 'amidesca')
-    a = parser.get('amis', 'amia')
-    bdesc = parser.get('amis', 'amidescb')
-    b = parser.get('amis', 'amib')
-    cdesc = parser.get('amis', 'amidescc')
-    c = parser.get('amis', 'amic')
-    os.remove('win_brenda.ini')
     reload(ami)
 
     while True:
         clear()
         print
-        print ' Current AMI = '+ami.AMI_ID
+        print ' m = Go to previous menu'
         print
         print
+        print ' a = Input your own AMI'
         print
-        print ' Recommended compatible AMIs...'
-        print
-        print
-        print " a = "+adesc
-        print
-        print " b = "+bdesc
-        print
-        print " c = "+cdesc
+        print ' (Current AMI = '+ami.AMI_ID+')'
         print
         print
-        print
-        amiconf = raw_input(' Choose an AMI or enter "e" to input your own: ')
-        if amiconf =='a':
+        amiconf = raw_input(' Which task would you like to perform? ')
+        if amiconf =='m':
             clear()
-            os.chdir(bm+sl+brenda)
-            file = open("ami.py", "w")
-            w = """# An AMI that contains Blender and Brenda (may be None)
-AMI_ID="""
-            file.write(w+q+a+q)
-            file.close()
-            print
-            print " Changed AMI to "+a
-            spacetime()
             break
-        if amiconf =='b':
-            clear()
-            os.chdir(bm+sl+brenda)
-            file = open("ami.py", "w")
-            w = """# An AMI that contains Blender and Brenda (may be None)
-AMI_ID="""
-            file.write(w+q+b+q)
-            file.close()
-            print
-            print " Changed AMI to "+b
-            spacetime()
-            break
-        if amiconf =='c':
-            clear()
-            os.chdir(bm+sl+brenda)
-            file = open("ami.py", "w")
-            w = """# An AMI that contains Blender and Brenda (may be None)
-AMI_ID="""
-            file.write(w+q+c+q)
-            file.close()
-            print
-            print " Changed AMI to "+c
-            spacetime()
-            break
-        if amiconf =='e':
+        elif amiconf =='a':
             clear()
             print
             ami_user = raw_input(' Enter the new public AMI you wish to use: ')
@@ -413,7 +363,8 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             file.close()
             #status = os.chdir(bm)
             resetworkqueue()
-            clear()
+            exit = raw_input(' Press Enter to continue ')
+	    clear()
             break
         if nprojconf=='n':
             clear()
@@ -428,8 +379,14 @@ def workq ():
         print
         eframe = raw_input(' Animation end frame? ')       
         clear()
+        totalFrames = 1+int(eframe)-int(sframe)
         print
-        print " Your animation starts at frame "+sframe,"and ends at frame "+eframe
+        print " Your animation starts at frame "+sframe,"and ends at frame "+eframe+"." 
+        print
+        if totalFrames==1:
+            print " One frame will be rendered."
+        else:
+            print " A total of "+str(totalFrames)+" frames will be rendered."
         print
         qconf = raw_input(' Are these values correct, y or n? ')  
         if qconf=='y':
@@ -454,10 +411,6 @@ def workq ():
 
 def prices():
     clear()
-    spinstype = 'c1.xlarge'
-    spotrequest = py+br+i+spinstype+sb+spotprice
-    status = os.system(spotrequest)
-    print
     spinstype = 'c3.large'
     spotrequest = py+br+i+spinstype+sb+spotprice
     status = os.system(spotrequest)
@@ -467,6 +420,10 @@ def prices():
     status = os.system(spotrequest)
     print
     spinstype = 'c3.2xlarge'
+    spotrequest = py+br+i+spinstype+sb+spotprice
+    status = os.system(spotrequest)
+    print
+    spinstype = 'c3.4xlarge'
     spotrequest = py+br+i+spinstype+sb+spotprice
     status = os.system(spotrequest)
     print
@@ -490,12 +447,12 @@ def reviewjob():
         cost = Decimal(conf.i)
         number = Decimal(conf.h)
         math = cost*number
+        totalNumberOfFiles = totalframe
+        if conf.f == 'subframe':
+            totalNumberOfFiles = totalframe * int(conf.g) * int(conf.g)
         print "\n"
         print " %-25s %-15s" % ('AMI used',ami.AMI_ID)
         print " %-25s %-15s" % ('Project name',projname)
-        print " %-25s %-15s" % ('Start frame',conf.k)
-        print " %-25s %-15s" % ('End frame',conf.l)
-        print " %-25s %-15s" % ('Total frames',totalframe)
         print " %-25s %-15s" % ('Frame or sub-frame',conf.f)
         if conf.f == 'subframe':
             x = 'x'
@@ -503,9 +460,17 @@ def reviewjob():
         print " %-25s %-15s" % ('Frame format',conf.j)
         print " %-25s %-15s" % ('Instance type',conf.a)
         print " %-25s %-15s" % ('Availability zone',conf.m)
+        print "\n"
+        print " %-25s %-15s" % ('Start frame',conf.k)
+        print " %-25s %-15s" % ('End frame',conf.l)
+        print " %-25s %-15s" % ('Total frames',totalframe)
+        print "\n"
         print " %-25s %-15s" % ('Number of instances',conf.h)
         print " %-25s %-15s" % ('Bid per instance',conf.i)
         print " %-25s %-15s" % ('Cost per hour',math)
+        print "\n"
+        print " %-25s %-15s" % ('Total number of files (if 2D or if combining L&R images to one file)',totalNumberOfFiles)
+        print " %-25s %-15s" % ('Total number of files (if 3D and separate L&R images)',totalNumberOfFiles * 2)
         print "\n\n"
         rconf = raw_input(' Would you like to start the job, y or n? ')  
         if rconf == 'n':
@@ -559,6 +524,7 @@ def reviewjob():
                         print '\n'
                         print ' There was an error initiating Instances. Try a C3 instance type for this AMI'
                         resetworkqueue()
+                        exit = raw_input(' Press Enter to continue ')
                         break
                     if status == 0:
                         print '\n'
@@ -578,10 +544,10 @@ def instance():
     while True:
         clear()
         print
-        print " a = c1.xlarge (some newer AMIs not supported)"
-        print " b = c3.large"
-        print " c = c3.xlarge"
-        print " d = c3.2xlarge"
+        print " a = c3.large"
+        print " b = c3.xlarge"
+        print " c = c3.2xlarge"
+        print " d = c3.4xlarge"
         print
         inst = raw_input(' Which instance would you like to use? ')
         clear()
@@ -595,7 +561,25 @@ def instance():
         print
         zone = raw_input(' Which availability zone would you like to use? ')
         clear()
+        conf = read_conf_values()
+        totalFrames = 1+int(conf.l)-int(conf.k)
+        print " Hints:"
+        print 
+	if totalFrames==1:
+            print " You have selected only one frame to render."
+        else:
+            print " You have selected a total of "+str(totalFrames)+" frames to render."
         print
+
+	if conf.f=='subframe':
+            totalNumOfInstances = totalFrames * int(conf.g) * int(conf.g)
+	    print " You have selected subframe rendering ("+conf.g+"x"+conf.g+")."
+            print 
+            print " For the fastest possible rendering time, use a total of "+str(totalNumOfInstances)+" instances."
+        else:
+            print " You have selected whole frame rendering."
+	print 
+	print 
         amount = raw_input(' How many instances would you like to initiate? ')
         clear()
         print
@@ -604,16 +588,16 @@ def instance():
         global type
         while True:
             if inst == 'a':
-                instype = 'c1.xlarge'
-                break
-            if inst == 'b':
                 instype = 'c3.large'
                 break
-            if inst == 'c':
+            if inst == 'b':
                 instype = 'c3.xlarge'
                 break
-            if inst == 'd':
+            if inst == 'c':
                 instype = 'c3.2xlarge'
+                break
+            if inst == 'd':
+                instype = 'c3.4xlarge'
                 break
 
         zonetype = zonebase + zone
@@ -916,6 +900,9 @@ def cancelmenuoptions ():
     print " c = Cancel pending spot requests"
     print " e = Empty frame and project buckets"
     print
+    print " y = Reset work queue, stop all running instances, and cancel pending spot requests"
+    print " z = Reset work queue, stop all running instances, cancel pending spot requests, and empty frame and project buckets"
+    print
     print
 
 def cancelmenu ():
@@ -927,124 +914,85 @@ def cancelmenu ():
         if canceltask=='m':
             clear()           
             break  
+
+        if canceltask=='y':  
+            clear()
+            resetworkqueue()
+            stopinstances()
+            cancelpendingspots()
+            exit = raw_input(' Press Enter to continue ')
+            clear()
+
+        if canceltask=='z':  
+            clear()
+            print
+            econf = raw_input(' Would you like to (among other things) empty frame and project buckets, y or n? ')  
+            if econf =='y':
+                clear()
+                print
+                print ' This operation will (among other things) delete all files in your frame and project buckets!'
+                print 
+                print
+                doubleeconf = raw_input(' Are you sure, y or n? ')                
+                if doubleeconf == 'y':
+                    clear()
+                    resetworkqueue()
+                    stopinstances()
+                    cancelpendingspots()
+                    emptybuckets()
+		    exit = raw_input(' Press Enter to continue ')
+                else:
+                    clear()
+                    print
+                    print ' Frame and project buckets have not been emptied. The operation has been canceled.'
+                    spacetime()
+            else:
+                clear()
+                print
+                print ' Frame and project buckets have not been emptied. The operation has been canceled.'
+                spacetime()     
+
         if canceltask=='r':  
             clear()
             resetworkqueue()
-            clear()
+            exit = raw_input(' Press Enter to continue ')
 
         if canceltask=='s':  
             clear()
-            print
-            status = os.system(py+br+t+sp)
-            if status==0:
-                print
-                print
-                print " Instances have been stopped"
-            if status==1:
-                print
-                print
-                print
-                print " There was a problem, please try an alternative method" 
-            print
-            print
+            stopinstances()
             exit = raw_input(' Press Enter to continue ')
       
         if canceltask=='c':  
             clear()
-            print
-            status = os.system(py+br+ca)
-            if status==0:
-                print
-                print
-                print " Pending spot requests have been cancelled"
-            if status==1:
-                print
-                print
-                print
-                print " There was a problem, please try an alternative method"
-            print
-            print
-            exit = raw_input(' Press Enter to continue ')
+            cancelpendingspots()
+	    exit = raw_input(' Press Enter to continue ')
 
         if canceltask=='e':
             clear()
             print
             econf = raw_input(' Would you like to empty frame and project buckets, y or n? ')  
-            if econf == 'n':
-                clear()
-                print
-                print ' frame and project buckets have not been emptied'
-                spacetime()     
             if econf =='y':
                 clear()
                 print
-                print ' This will delete all files in your frame and project buckets'
+                print ' This will delete all files in your frame and project buckets!'
                 print 
                 print
                 doubleeconf = raw_input(' Are you sure, y or n? ')
-                if doubleeconf =='n':
+                if doubleeconf == 'y':
+                    clear()
+                    emptybuckets()
+		    exit = raw_input(' Press Enter to continue ')
+                else:
                     clear()
                     print
                     print ' frame and project buckets have not been emptied'
                     spacetime()
-                if doubleeconf == 'y':
-                    clear()
-                    #gets various variables
-                    from os.path import expanduser
-                    home = expanduser("~")
-                    os.chdir(home)
-                    parser = ConfigParser.ConfigParser()
-                    parser.readfp(FakeSecHead(open('.brenda.conf')))
-                    #find original values
-                    a = parser.get('asection', 'INSTANCE_TYPE')
-                    b = parser.get('asection', 'BLENDER_PROJECT')
-                    c = parser.get('asection', 'WORK_QUEUE')
-                    d = parser.get('asection', 'RENDER_OUTPUT')
-                    e = parser.get('asection', 'DONE')
-                    f = parser.get('asection', 'FRAME_OR_SUBFRAME')
-                    g = parser.get('asection', 'TILE')
-                    h = parser.get('asection', 'NUMBER_INSTANCES')
-                    i = parser.get('asection', 'PRICE_BID')
-                    j = parser.get('asection', 'FILE_TYPE')
-                    k = parser.get('asection', 'START_FRAME')
-                    l = parser.get('asection', 'END_FRAME')
-                    m = parser.get('asection', 'AVAILABILITY_ZONE')
+            else:
+                clear()
+                print
+                print ' frame and project buckets have not been emptied'
+                spacetime()     
 
-                    #create new options
-                    a_nm = 'INSTANCE_TYPE='
-                    b_nm = 'BLENDER_PROJECT='
-                    c_nm = 'WORK_QUEUE='
-                    d_nm = 'RENDER_OUTPUT='
-                    e_nm = 'DONE='
-                    f_nm = 'FRAME_OR_SUBFRAME='
-                    g_nm = 'TILE='
-                    h_nm = 'NUMBER_INSTANCES='
-                    i_nm = 'PRICE_BID='
-                    j_nm = 'FILE_TYPE='
-                    k_nm = 'START_FRAME='
-                    l_nm = 'END_FRAME='
-                    m_nm = 'AVAILABILITY_ZONE='
-                    z = '\n'
-
-                    projbucketname = urlparse.urlsplit(b).netloc
-                    projbucketpath = 's3://'+projbucketname
-
-                    #changes to s3cmd working directory
-                    os.chdir(ps)
-
-                    #deletes all old project files
-                    print
-                    print 'python s3cmd del -r -f '+projbucketpath
-                    status = os.system('python s3cmd del -r -f '+projbucketpath)
-
-                    #deletes all old frames
-                    print
-                    print 'python s3cmd del -r -f '+d
-                    status = os.system('python s3cmd del -r -f '+d)
-                    print
-                    print " Files in project and frame buckets have been deleted"
-                    print
-                    exit = raw_input(' Press Enter to continue ')
 
 
 
@@ -1066,29 +1014,6 @@ def toolchange ():
     data[73] = """                user = utils.get_opt(opts.user, conf, 'AWS_USER', default='ubuntu')\n"""
     with open(bm+sl+brenda+sl+x, 'w') as file:
         file.writelines( data )
-
-#This checks the version number and shows a notification if there is a newer version up on github
-def vercheck ():
-    clear()
-    try:
-        urllib.urlretrieve ("http://www.thegreyroompost.com/win_brenda/win_brenda.ini", "win_brenda.ini")
-        parser = SafeConfigParser()
-        parser.read('win_brenda.ini')
-        ghver = parser.get('versions', 'ghver')
-        os.remove('win_brenda.ini')
-        ghver = int(ghver)
-        if ghver > thisver:
-            print
-            print
-            print " UPDATED VERSION AVAILABLE"
-            print
-            print " Check github"
-            print
-            spacetime()
-    except:
-        print "There was a problem setting up the application. Is this computer connected to the internet?"
-        spacetime()
-        pass
 
 #This checks frame and subframe options in .conf file
 def confadd ():
@@ -1186,12 +1111,15 @@ def projectmenu():
 
         if instchoice == 'b':
             nproj()
+            break
 
         if instchoice == 'e':
             nprojexternal()
+            break
 
         if instchoice == 'z':
             nprojzipped()
+            break
 
 
 def frames ():
@@ -1441,15 +1369,102 @@ def resetworkqueue():
     if status==0:
         print
         print " Work queue has been reset"
+        print
     if status==1:
         print
         print
         print
         print " There was a problem resetting work queue, please try waiting 60 seconds"
-    exit = raw_input(' Press Enter to continue ')
     os.chdir(bm)
 
+def stopinstances ():
+    print
+    status = os.system(py+br+t+sp)
+    if status==0:
+       print
+       print
+       print " Instances have been stopped"
+       print
+    if status==1:
+       print
+       print
+       print
+       print " There was a problem stopping the running instances. Please try an alternative method." 
+       print
+       print
 
+def cancelpendingspots ():
+    print
+    status = os.system(py+br+ca)
+    if status==0:
+        print
+        print
+        print " Pending spot requests have been cancelled"
+        print
+    if status==1:
+        print
+        print
+        print
+        print " There was a problem canceling the pending spot requests. Please try an alternative method."
+        print
+        print
+
+def emptybuckets ():
+    #gets various variables
+    from os.path import expanduser
+    home = expanduser("~")
+    os.chdir(home)
+    parser = ConfigParser.ConfigParser()
+    parser.readfp(FakeSecHead(open('.brenda.conf')))
+    #find original values
+    a = parser.get('asection', 'INSTANCE_TYPE')
+    b = parser.get('asection', 'BLENDER_PROJECT')
+    c = parser.get('asection', 'WORK_QUEUE')
+    d = parser.get('asection', 'RENDER_OUTPUT')
+    e = parser.get('asection', 'DONE')
+    f = parser.get('asection', 'FRAME_OR_SUBFRAME')
+    g = parser.get('asection', 'TILE')
+    h = parser.get('asection', 'NUMBER_INSTANCES')
+    i = parser.get('asection', 'PRICE_BID')
+    j = parser.get('asection', 'FILE_TYPE')
+    k = parser.get('asection', 'START_FRAME')
+    l = parser.get('asection', 'END_FRAME')
+    m = parser.get('asection', 'AVAILABILITY_ZONE')
+
+    #create new options
+    a_nm = 'INSTANCE_TYPE='
+    b_nm = 'BLENDER_PROJECT='
+    c_nm = 'WORK_QUEUE='
+    d_nm = 'RENDER_OUTPUT='
+    e_nm = 'DONE='
+    f_nm = 'FRAME_OR_SUBFRAME='
+    g_nm = 'TILE='
+    h_nm = 'NUMBER_INSTANCES='
+    i_nm = 'PRICE_BID='
+    j_nm = 'FILE_TYPE='
+    k_nm = 'START_FRAME='
+    l_nm = 'END_FRAME='
+    m_nm = 'AVAILABILITY_ZONE='
+    z = '\n'
+
+    projbucketname = urlparse.urlsplit(b).netloc
+    projbucketpath = 's3://'+projbucketname
+
+    #changes to s3cmd working directory
+    os.chdir(ps)
+
+    #deletes all old project files
+    print
+    print 'python s3cmd del -r -f '+projbucketpath
+    status = os.system('python s3cmd del -r -f '+projbucketpath)
+
+    #deletes all old frames
+    print
+    print 'python s3cmd del -r -f '+d
+    status = os.system('python s3cmd del -r -f '+d)
+    print
+    print " Files in project and frame buckets have been deleted"
+    print
 
 
 def subframecreate ():
@@ -1471,7 +1486,6 @@ blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######_X-$SF_MIN_X-$SF
 
 
 
-vercheck()
 subframecreate()
 toolchange()
 inidup()
