@@ -411,22 +411,14 @@ def workq ():
 
 def prices():
     clear()
-    spinstype = 'c3.large'
-    spotrequest = py+br+i+spinstype+sb+spotprice
-    status = os.system(spotrequest)
-    print
-    spinstype = 'c3.xlarge'
-    spotrequest = py+br+i+spinstype+sb+spotprice
-    status = os.system(spotrequest)
-    print
-    spinstype = 'c3.2xlarge'
-    spotrequest = py+br+i+spinstype+sb+spotprice
-    status = os.system(spotrequest)
-    print
-    spinstype = 'c3.4xlarge'
-    spotrequest = py+br+i+spinstype+sb+spotprice
-    status = os.system(spotrequest)
-    print
+    printspotrequest('c3.large')
+    printspotrequest('c3.xlarge')
+    printspotrequest('c3.2xlarge')
+    printspotrequest('c3.4xlarge')
+    printspotrequest('c4.large')
+    printspotrequest('c4.xlarge')
+    printspotrequest('c4.2xlarge')
+    printspotrequest('c5.large')
     exit = raw_input(' Press Enter to continue ')
 
 def reviewjob():
@@ -548,42 +540,13 @@ def instance():
         print " b = c3.xlarge"
         print " c = c3.2xlarge"
         print " d = c3.4xlarge"
+        print " e = c4.large"
+        print " f = c4.xlarge"
+        print " g = c4.2xlarge"
+        print " h = c5.large"
         print
         inst = raw_input(' Which instance would you like to use? ')
-        clear()
-        print
-        print " a = " + zonebase + "a"
-        print " b = " + zonebase + "b"
-        print " c = " + zonebase + "c"
-        print " d = " + zonebase + "d"
-        print " e = " + zonebase + "e"
-        print " f = " + zonebase + "f"
-        print
-        zone = raw_input(' Which availability zone would you like to use? ')
-        clear()
-        conf = read_conf_values()
-        totalFrames = 1+int(conf.l)-int(conf.k)
-        print " Hints:"
-        print 
-	if totalFrames==1:
-            print " You have selected only one frame to render."
-        else:
-            print " You have selected a total of "+str(totalFrames)+" frames to render."
-        print
 
-	if conf.f=='subframe':
-            totalNumOfInstances = totalFrames * int(conf.g) * int(conf.g)
-	    print " You have selected subframe rendering ("+conf.g+"x"+conf.g+")."
-            print 
-            print " For the fastest possible rendering time, use a total of "+str(totalNumOfInstances)+" instances."
-        else:
-            print " You have selected whole frame rendering."
-	print 
-	print 
-        amount = raw_input(' How many instances would you like to initiate? ')
-        clear()
-        print
-        price = raw_input(' How much would you like to bid per instance hour (#.##)? ')
         clear()
         global type
         while True:
@@ -599,9 +562,60 @@ def instance():
             if inst == 'd':
                 instype = 'c3.4xlarge'
                 break
+            if inst == 'e':
+                instype = 'c4.large'
+                break
+            if inst == 'f':
+                instype = 'c4.xlarge'
+                break
+            if inst == 'g':
+                instype = 'c4.2xlarge'
+                break
+            if inst == 'h':
+                instype = 'c5.large'
+                break
+        print
+        printspotrequest(instype)
+        print
+        print " a = " + zonebase + "a"
+        print " b = " + zonebase + "b"
+        print " c = " + zonebase + "c"
+        print " d = " + zonebase + "d"
+        print " e = " + zonebase + "e"
+        print " f = " + zonebase + "f"
+        print
+        zone = raw_input(' Which availability zone would you like to use? ')
+        print
+        price = raw_input(' How much would you like to bid per instance hour (#.##)? ')
 
+        clear()
+        conf = read_conf_values()
+        totalFrames = 1+int(conf.l)-int(conf.k)
+        print 
+	if totalFrames==1:
+            print " You have selected only one frame to render."
+        else:
+            print " You have selected a total of "+str(totalFrames)+" frames to render."
+        print
+
+	if conf.f=='subframe':
+            totalNumOfInstances = totalFrames * int(conf.g) * int(conf.g)
+	    amtPerHour = totalNumOfInstances * float(price)
+	    print " You have selected subframe rendering ("+conf.g+"x"+conf.g+")."
+            print 
+            print " For the fastest possible rendering time, use a total of "+str(totalNumOfInstances)+" instances ($"+price+" per instance, $"+str(amtPerHour)+" an hour)."
+        else:
+            totalNumOfInstances = totalFrames
+	    amtPerHour = totalNumOfInstances * float(price)
+            print " You have selected whole frame rendering."
+            print 
+            print " For the fastest possible rendering time, use a total of "+str(totalNumOfInstances)+" instances ($"+price+" per instance, $"+str(amtPerHour)+" an hour)."
+	print 
+	print 
+        amount = raw_input(' How many instances would you like to initiate? ')
+
+        clear()
         zonetype = zonebase + zone
-
         print
         print " You are bidding for "+amount,"X"+sb+instype,"in availability zone "+zonetype,"at a cost of $"+price,"per instance."
         print
@@ -1483,6 +1497,10 @@ EOF
 blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######_X-$SF_MIN_X-$SF_MAX_X-Y-$SF_MIN_Y-$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a""")
         file.close()
 
+def printspotrequest(spinstype):
+    spotrequest = py+br+i+spinstype+sb+spotprice
+    status = os.system(spotrequest)
+    print
 
 
 
