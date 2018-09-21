@@ -12,7 +12,6 @@ import urllib2
 import urllib
 import sys
 
-
 thisver = 201608162155
 
 def spacetime ():
@@ -415,10 +414,10 @@ def prices():
     printspotrequest('c3.xlarge')
     printspotrequest('c3.2xlarge')
     printspotrequest('c3.4xlarge')
-    printspotrequest('c4.large')
-    printspotrequest('c4.xlarge')
-    printspotrequest('c4.2xlarge')
     printspotrequest('c5.large')
+    printspotrequest('c5.xlarge')
+    printspotrequest('c5.2xlarge')
+    printspotrequest('c5.4xlarge')
     exit = raw_input(' Press Enter to continue ')
 
 def reviewjob():
@@ -461,7 +460,7 @@ def reviewjob():
         print " %-25s %-15s" % ('Bid per instance',conf.i)
         print " %-25s %-15s" % ('Cost per hour',math)
         print "\n"
-        print " %-25s %-15s" % ('Total number of files (if 2D or if combining L&R images to one file)',totalNumberOfFiles)
+        print " %-25s %-15s" % ('Total number of files (if 2D or if combining 3D L&R images to one file)',totalNumberOfFiles)
         print " %-25s %-15s" % ('Total number of files (if 3D and separate L&R images)',totalNumberOfFiles * 2)
         print "\n\n"
         rconf = raw_input(' Would you like to start the job, y or n? ')  
@@ -540,10 +539,10 @@ def instance():
         print " b = c3.xlarge"
         print " c = c3.2xlarge"
         print " d = c3.4xlarge"
-        print " e = c4.large"
-        print " f = c4.xlarge"
-        print " g = c4.2xlarge"
-        print " h = c5.large"
+        print " e = c5.large"
+        print " f = c5.xlarge"
+        print " g = c5.2xlarge"
+        print " h = c5.4xlarge"
         print
         inst = raw_input(' Which instance would you like to use? ')
 
@@ -563,16 +562,16 @@ def instance():
                 instype = 'c3.4xlarge'
                 break
             if inst == 'e':
-                instype = 'c4.large'
+                instype = 'c5.large'
                 break
             if inst == 'f':
-                instype = 'c4.xlarge'
+                instype = 'c5.xlarge'
                 break
             if inst == 'g':
-                instype = 'c4.2xlarge'
+                instype = 'c5.2xlarge'
                 break
             if inst == 'h':
-                instype = 'c5.large'
+                instype = 'c5.4xlarge'
                 break
         print
         printspotrequest(instype)
@@ -1501,8 +1500,6 @@ def printspotrequest(spinstype):
     spotrequest = py+br+i+spinstype+sb+spotprice
     status = os.system(spotrequest)
     print
-
-
 
 subframecreate()
 toolchange()
