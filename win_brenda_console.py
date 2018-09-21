@@ -11,6 +11,8 @@ import zipfile
 import urllib2
 import urllib
 import sys
+from time import sleep
+from datetime import datetime
 
 thisver = 201608162155
 
@@ -522,7 +524,7 @@ def reviewjob():
                         print ' Instance/s have been initiated'
                         print
                         print
-                        exit = raw_input(' Press Enter to continue ')
+                        timer()
                         break
 
 
@@ -1500,6 +1502,18 @@ def printspotrequest(spinstype):
     spotrequest = py+br+i+spinstype+sb+spotprice
     status = os.system(spotrequest)
     print
+
+def timer():
+    start_time = datetime.now()
+    print " Enter m to go back to the previous menu, otherwise press Enter to see the current elapsed render time."
+    print
+    while True:
+        elapsed_time = datetime.now() - start_time
+        hours, remainder = divmod(elapsed_time.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+	timerInput = raw_input('   {:02}:{:02}:{:02}  '.format(int(hours), int(minutes), int(seconds)))
+	if timerInput=='m':
+            break
 
 subframecreate()
 toolchange()
