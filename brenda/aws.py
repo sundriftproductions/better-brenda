@@ -259,6 +259,7 @@ def get_ssh_identity_fn(opts, conf):
 
 def get_brenda_ssh_identity_fn(opts, conf, mkdir=False):
     ssh_dir = os.path.join(os.path.expanduser("~"), '.ssh')
+    print "LOOKING FOR THIS: " + ssh_dir
     if mkdir and not os.path.isdir(ssh_dir):
         os.mkdir(ssh_dir)
     return os.path.join(ssh_dir, "id_rsa.brenda")

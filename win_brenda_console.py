@@ -14,8 +14,6 @@ import sys
 from time import sleep
 from datetime import datetime
 
-thisver = 201608162155
-
 def spacetime ():
     time.sleep(3)
     clear()
@@ -26,7 +24,6 @@ def menerror():
     time.sleep(2)
     clear()
  
-
 clear = lambda: os.system('cls')
 
 ft = 'frame-template '
@@ -72,6 +69,8 @@ brenda = 'brenda'
 q = '"'
 ff = '-F'
 zonebase = 'us-east-1' # TODO: This should be pulled from a config file or from a Brenda command response so it's not tied to a particular region
+
+start_time = datetime(1900,1,1)
 
 sys.path.insert(0, bm+sl+brenda)
 import ami
@@ -524,7 +523,7 @@ def reviewjob():
                         print ' Instance/s have been initiated'
                         print
                         print
-                        timer()
+                        timer(1)
                         break
 
 
@@ -687,19 +686,26 @@ def monmenuoptions ():
     print " w = Work queue status"
     print " r = Run status"
     print " u = Uptime of instances"
-    print " t = Tail log from instances"
     print " f = Farm performance"
     print " c = Instance task (frame) count"
     print " p = Prune instances"
+    print " l = Tail log from instances"
+    print " t = See time elapsed since start of render"
     print
     print
 
 def monmenu ():
+    global start_time
     while True:
         clear()
         status = os.chdir(bm)
         monmenuoptions()
-        montask = raw_input(' Which task would you like to perform? ')    
+        montask = raw_input(' Which task would you like to perform? ')   
+        if montask=='t':           
+            clear()
+            if (start_time == datetime(1900,1,1)):
+                start_time = datetime.now()
+            timer(0)
         if montask=='m':
             clear()
             break
@@ -724,7 +730,7 @@ def monmenu ():
             print
             print
             exit = raw_input(' Press Enter to continue ')
-        if montask=='t':           
+        if montask=='l':           
             clear()
             print
             os.system(py+bt+sh+tl)      
@@ -1503,8 +1509,10 @@ def printspotrequest(spinstype):
     status = os.system(spotrequest)
     print
 
-def timer():
-    start_time = datetime.now()
+def timer(start):
+    global start_time
+    if (start == 1):
+        start_time = datetime.now()
     print " Enter m to go back to the previous menu, otherwise press Enter to see the current elapsed render time."
     print
     while True:
