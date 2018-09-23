@@ -81,10 +81,6 @@ def run_cmd_list(opts, conf, cmd_seq, show_output, capture_stderr):
                 c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
                 try:
-                    print 'Attempting to connect...'
-                    print
-                    print 'hostname: ' + node
-                    print 'username: ' + user
                     c.connect( hostname = node, username = user, pkey = k, timeout=120 )
                     #change working directory on remote node to brenda diretory and execute ssh args
                     commands = ["cd /mnt/brenda", sshArgs]
