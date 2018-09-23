@@ -109,7 +109,7 @@ def run_cmd_list(opts, conf, cmd_seq, show_output, capture_stderr):
                 #    if show_output:
                 #        print "------- %s\n%s" % data,
                 #    ret.append(data)
-                #q.task_done()
+                q.task_done()
 
     ret = []
     q = Queue.Queue()
