@@ -1,3 +1,4 @@
+
 # Brenda -- Blender render tool for Amazon Web Services
 # Copyright (C) 2013 James Yonan <james@openvpn.net>
 #
@@ -58,13 +59,59 @@ def run_cmd_list(opts, conf, cmd_seq, show_output, capture_stderr):
                 break
             else:
                 node, cmd = item
-                output = utils.system_return_output(cmd, capture_stderr=capture_stderr)
-                data = (node, output)
-                with lock:
-                    if show_output:
-                        print "------- %s\n%s" % data,
-                    ret.append(data)
-                q.task_done()
+
+
+
+                #output = utils.system_return_output(cmd, capture_stderr=capture_stderr)
+
+                #new ssh on windows code-------------------------------------
+                import paramiko
+                #read ssh args from end of cmd object immediately following the node hostname entry
+                sshArgs = " ".join(cmd[cmd.index(node)+1:])
+                #print "sshargs: " +ssArgs
+                #get username
+                #print "trying new user"
+                user = utils.get_opt(opts.user, conf, 'AWS_USER', default='ubuntu')
+                #print "user: " + user
+                #get path to brenda private rsa key file
+                brendaKeyPath =  aws.get_adaptive_ssh_identity_fn(opts, conf)
+                
+                k = paramiko.RSAKey.from_private_key_file(brendaKeyPath)
+                c = paramiko.SSHClient()
+                c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+                try:
+                    c.connect( hostname = node, username = user, pkey = k, timeout=120 )
+                    #change working directory on remote node to brenda diretory and execute ssh args
+                    commands = ["cd /mnt/brenda", sshArgs]
+                    for command in commands:
+                        stdin , stdout, stderr = c.exec_command(command)
+                        output = stdout.read()
+                    c.close()
+
+
+
+                    data = (node, output)
+                    with lock:
+                        if show_output:
+                            print "------- %s\n%s" % data,
+                        ret.append(data)
+                    q.task_done()
+
+
+
+                except Exception as e:
+                    print e
+                    q.task_done()
+
+                #new ssh on windows code-------------------------------------
+
+                #data = (node, output)
+                #with lock:
+                #    if show_output:
+                #        print "------- %s\n%s" % data,
+                #    ret.append(data)
+                #q.task_done()
 
     ret = []
     q = Queue.Queue()

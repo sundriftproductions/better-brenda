@@ -69,6 +69,8 @@ def spot(opts, conf):
         user_data = script
     ssh_key_name = conf.get("SSH_KEY_NAME", "brenda")
     sec_groups = (conf.get("SECURITY_GROUP", "brenda"),)
+    zone = utils.get_opt(opts.availability_zone, conf, 'AVAILABILITY_ZONE')
+
     run_args = {
         'image_id'      : ami_id,
         'price'         : price,
@@ -79,6 +81,7 @@ def spot(opts, conf):
         'key_name'      : ssh_key_name,
         'security_groups' : sec_groups,
         'block_device_map' : bdm,
+        'placement'        : zone,
         }
 
     print "----------------------------"
@@ -86,6 +89,7 @@ def spot(opts, conf):
     print "Max bid price", price
     print "Request type:", reqtype
     print "Instance type:", itype
+    print "Availability zone:", zone
     print "Instance count:", opts.n_instances
     if snap_description:
         print "Project EBS snapshot:", snap_description
@@ -299,3 +303,4 @@ def print_script(opts, conf, script):
 
 def brenda_instance_type(opts, conf):
     return utils.get_opt(opts.instance_type, conf, 'INSTANCE_TYPE', default="m2.xlarge")
+
