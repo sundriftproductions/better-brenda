@@ -442,8 +442,9 @@ def framelist():
     print framelistfile
     print
     with open(conf.n) as f:
-        totalframe = len(f.readline().strip().split(','))
-    print "This file has a total of " + totalframe + " frame(s)."
+        totalframes = len(f.readline().strip().split(','))
+    print "This file has a total of " + str(totalframes) + " frame(s)."
+    print
     exit = raw_input(' Press Enter to continue ')
 
 def prices():
