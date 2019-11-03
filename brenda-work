@@ -96,6 +96,10 @@ Examples:
     parser.add_option("-H", "--hard", action="store_true", dest="hard",
                       help="For reset, delete the SQS queue itself")
 
+    parser.add_option("-f", "--frame-list", type="string", dest="frame_list", default='',
+                      help="Use frame list (a text file containing a list of specific frames to render)")
+
+
     # Get command line arguments...
     ( opts, args ) = parser.parse_args()
     #print "OPTS", (opts, args)
@@ -110,6 +114,8 @@ Examples:
     # dispatch
     if args[0] == 'push':
         work.push(opts, args, conf)
+    elif args[0] == 'push_with_frame_script':
+        work.push_with_frame_script(opts, args, conf)
     elif args[0] == 'status':
         work.status(opts, args, conf)
     elif args[0] == 'reset':

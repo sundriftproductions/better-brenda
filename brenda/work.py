@@ -80,6 +80,52 @@ def push(opts, args, conf):
         if q is not None:
             aws.write_sqs_queue(task, q)
 
+def push_with_frame_script(opts, args, conf):
+    with open(opts.frame_list) as f:
+        frames = f.readline().strip().split(',') # Read the first line and remove the new line at the end if it's there.
+
+    # get task script
+    with open(opts.task_script) as f:
+        task_script = f.read()
+
+    # build tasklist
+    tasklist = []
+    for fnum in frames:
+        script = task_script
+        start = int(fnum)
+        end = int(fnum)
+        step = 1
+        for key, value in (
+              ("$FRAME", "-s %d -e %d -j %d" % (start, end, step)),
+              ("$START", "%d" % (start,)),
+              ("$END", "%d" % (end,)),
+              ("$STEP", "%d" % (step,))
+              ):
+            script = script.replace(key, value)
+        if subframe_iterator_defined(opts):
+            for macro_list in subframe_iterator(opts):
+                sf_script = script
+                for key, value in macro_list:
+                    sf_script = sf_script.replace(key, value)
+                tasklist.append(sf_script)
+        else:
+            tasklist.append(script)
+
+    # possibly randomize the task list
+    if opts.randomize:
+        random.shuffle(tasklist)
+
+    # get work queue
+    q = None
+    if not opts.dry_run:
+        q = aws.create_sqs_queue(conf)
+
+    # push work queue to sqs
+    for task in tasklist:
+        print task,
+        if q is not None:
+            aws.write_sqs_queue(task, q)
+
 def status(opts, args, conf):
     q = aws.get_sqs_queue(conf)
     if q is not None:

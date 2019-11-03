@@ -31,6 +31,8 @@ sft = 'subframe-template '
 strt = '-s '
 end = '-e '
 pu = 'push'
+push_with_frame_script='push_with_frame_script'
+frame_script = '-f '
 sb = ' '
 i = '-i '
 n = '-N '
@@ -169,7 +171,7 @@ AMI_ID="""
                 clear()
                 break
 
-def nproj ():
+def nproj():
     clear()
     print
     print " Select your Blender project file (texture files etc. must be packed)..."
@@ -258,6 +260,8 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             k = parser.get('asection', 'START_FRAME')
             l = parser.get('asection', 'END_FRAME')
             m = parser.get('asection', 'AVAILABILITY_ZONE')
+            n = parser.get('asection', 'FRAME_LIST_FILE')
+            o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
 
             #create new options
             a_nm = 'INSTANCE_TYPE='
@@ -273,6 +277,8 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             k_nm = 'START_FRAME='
             l_nm = 'END_FRAME='
             m_nm = 'AVAILABILITY_ZONE='
+            n_nm = 'FRAME_LIST_FILE='
+            o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
             z = '\n'
 
             projbucketname = urlparse.urlsplit(b).netloc
@@ -358,7 +364,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             os.chdir(home)
             file = open(".brenda.conf", "w")
             b = projbucketpath+sl+zippedprojfilename
-            newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m
+            newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m+z+n_nm+n+z+o_nm+o
             file.write(newconfig)
             file.close()
             #status = os.chdir(bm)
@@ -370,7 +376,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             clear()
             break
 
-def workq ():
+def workq():
     while True:
         clear()
         print
@@ -395,7 +401,8 @@ def workq ():
             #new values
             k = sframe
             l = eframe
-            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+k+conf.z+conf.l_nm+l+conf.z+conf.m_nm+conf.m
+            o = 'FRAME_RANGE'
+            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+k+conf.z+conf.l_nm+l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+o
             confwrite(newconfig)
             print
             print ' Frame range changed ( '+k,'- '+l,')'
@@ -407,7 +414,34 @@ def workq ():
             print ' Frame range not changed'
             spacetime()
             break
-                
+
+def framelist():
+    clear()
+    print
+    print "Select your framelist text file."
+    print
+    print "The framelist text file should contain one line of text with each frame number separated by a comma and no spaces."
+    print
+    print "Example:"
+    print "455427,456321,457215,458109,459004,459898,460792,461686,462580,463474,464369,465263"
+    time.sleep(1)
+    root = Tk()
+    root.withdraw()
+    framelistfile = askopenfilename(parent=root, title='Select your framelist text file')
+    root.destroy()
+
+    conf = read_conf_values()
+    # new values
+    o = 'FRAME_LIST'
+    n = framelistfile
+    newconfig = conf.a_nm + conf.a + conf.z + conf.b_nm + conf.b + conf.z + conf.c_nm + conf.c + conf.z + conf.d_nm + conf.d + conf.z + conf.e_nm + conf.e + conf.z + conf.f_nm + conf.f + conf.z + conf.g_nm + conf.g + conf.z + conf.h_nm + conf.h + conf.z + conf.i_nm + conf.i + conf.z + conf.j_nm + conf.j + conf.z + conf.k_nm + conf.k + conf.z + conf.l_nm + conf.l + conf.z + conf.m_nm + conf.m + conf.z + conf.n_nm + n + conf.z + conf.o_nm + o
+    confwrite(newconfig)
+
+    clear()
+    print "Going to use this file as the frame list:"
+    print framelistfile
+    print
+    exit = raw_input(' Press Enter to continue ')
 
 def prices():
     clear()
@@ -433,7 +467,26 @@ def reviewjob():
         reload(ami)
         intstartframe = int(conf.k)
         intendframe = int(conf.l)
-        totalframe = intendframe-intstartframe+1
+        if conf.o == 'FRAME_RANGE':
+            totalframe = intendframe-intstartframe+1
+        else: # FRAME_LIST
+            # Look at what we have in our frame list so we can see how many frames there are
+            # as well as provide some example frame numbers.
+            with open(conf.n) as f:
+                framelist = f.readline().strip().split(',')
+                totalframe = len(framelist)
+                indx=0
+                textFrameList = ''
+                for frame in framelist:
+                    if indx > 0:
+                        textFrameList = textFrameList + ', '
+                    textFrameList = textFrameList + frame
+                    indx=indx+1
+                    if indx>4:
+                        textFrameList = textFrameList + '...'
+                        break
+                textFrameList = '[' + textFrameList + ']'
+
         if conf.j =='specifiedinfile':
             conf.j = 'as specified in uploaded .blend file'
         cost = Decimal(conf.i)
@@ -453,9 +506,15 @@ def reviewjob():
         print " %-25s %-15s" % ('Instance type',conf.a)
         print " %-25s %-15s" % ('Availability zone',conf.m)
         print "\n"
-        print " %-25s %-15s" % ('Start frame',conf.k)
-        print " %-25s %-15s" % ('End frame',conf.l)
-        print " %-25s %-15s" % ('Total frames',totalframe)
+        if conf.o == 'FRAME_RANGE':
+            print " Using Frame Range:"
+            print " %-25s %-15s" % ('  Start frame',conf.k)
+            print " %-25s %-15s" % ('  End frame',conf.l)
+            print " %-25s %-15s" % ('  Total frames',totalframe)
+        else: # FRAME_LIST
+            print " Using Frame List:"
+            print " %-25s %-15s" % ('  Example frames',textFrameList)
+            print " %-25s %-15s" % ('  Total frames',totalframe)
         print "\n"
         print " %-25s %-15s" % ('Number of instances',conf.h)
         print " %-25s %-15s" % ('Bid per instance',conf.i)
@@ -490,10 +549,15 @@ def reviewjob():
                 clear()
                 os.chdir(bm)
                 if conf.f == 'frame':
-                    queue = py+bw+t+ft+strt+conf.k+sb+end+conf.l+sb+pu
-
+                    if conf.o == 'FRAME_RANGE': # We have a normal range of frames, so we need to put a "push" at the end of this call
+                        queue = py+bw+t+ft+strt+conf.k+sb+end+conf.l+sb+pu
+                    else: # FRAME_LIST
+                        queue = py+bw+t+ft+frame_script+'"'+conf.n+'"'+sb+push_with_frame_script
                 if conf.f == 'subframe':
-                    queue = py+bw+t+sft+strt+conf.k+sb+end+conf.l+sb+xsize+conf.g+sb+ysize+conf.g+sb+pu
+                    if conf.o == 'FRAME_RANGE': # We have a normal range of frames, so we need to put a "push" at the end of this call
+                        queue = py+bw+t+sft+strt+conf.k+sb+end+conf.l+sb+xsize+conf.g+sb+ysize+conf.g+sb+pu
+                    else: # FRAME_LIST
+                        queue = py+bw+t+sft+frame_script+'"'+conf.n+'"'+sb+xsize+conf.g+sb+ysize+conf.g+sb+push_with_frame_script
 
                 status = os.system(queue)
                 print '\n'
@@ -634,7 +698,7 @@ def instance():
             a = instype
             i = price
             m = zonetype
-            newconfig = conf.a_nm+a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+h+conf.z+conf.i_nm+i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+m
+            newconfig = conf.a_nm+a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+h+conf.z+conf.i_nm+i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
             confwrite(newconfig)
             print
             print ' Instance information has been changed to'
@@ -732,12 +796,14 @@ def monmenu ():
             exit = raw_input(' Press Enter to continue ')
         if montask=='l':           
             clear()
-            print
-            os.system(py+bt+sh+tl)      
-            print
-            print
-            exit = raw_input(' Press Enter to continue ')
-        if montask=='f':           
+            while True:
+                print
+                os.system(py+bt+sh+tl)
+                print
+                logInput = raw_input(' Enter m to go back to the previous menu, otherwise press Enter to get more of the log.')
+                if logInput == 'm':
+                    break
+        if montask=='f':
             clear()
             print
             os.system(py+bt+pf)    
@@ -1057,6 +1123,8 @@ def confadd ():
         d = parser.get('asection', 'RENDER_OUTPUT')
         e = parser.get('asection', 'DONE')
         m = parser.get('asection', 'AVAILABILITY_ZONE')
+        n = parser.get('asection', 'FRAME_LIST_FILE')
+        o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
         #new values
         f = 'frame'
         g = 'non'
@@ -1080,9 +1148,11 @@ def confadd ():
         k_nm = 'START_FRAME='
         l_nm = 'END_FRAME='
         m_nm = 'AVAILABILITY_ZONE='
+        n_nm = 'FRAME_LIST_FILE='
+        o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
         z = '\n'
         #write to file
-        newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m
+        newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m+z+n_nm+n+z+o_nm+o
         file = open(".brenda.conf", "w")
         file.write(newconfig)
         file.close()
@@ -1150,10 +1220,11 @@ def frames ():
         print ' m = Go to previous menu'
         print
         print
-        print ' r = Range'
+        print ' r = Use (and set) frame range'
+        print ' u = Use (and select) a frame list file (a text file containing a list of specific frames to render)'
         print ' w = Whole frames'
         print ' s = Sub-frames tiles'
-        print ' f = File format '
+        print ' f = File format'
         print
         print
         conf = read_conf_values()
@@ -1165,13 +1236,16 @@ def frames ():
         if framechoice == 'r':
             workq()
 
+        if framechoice == 'u':
+            framelist()
+
         if framechoice == 'w':
             clear()
             #new values
             f = 'frame'
             g = 'non'
             #write to file
-            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
             confwrite(newconfig)
             print
             print ' Changed to whole frame rendering'
@@ -1194,7 +1268,7 @@ def frames ():
                     f = 'subframe'
                     g = '8'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     print
                     print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
@@ -1206,7 +1280,7 @@ def frames ():
                     f = 'subframe'
                     g = '4'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     print
                     print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
@@ -1217,7 +1291,7 @@ def frames ():
                     f = 'subframe'
                     g = '2'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     print
                     print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
@@ -1243,7 +1317,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     clear()
                     print
@@ -1257,7 +1331,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     clear()
                     print
@@ -1271,7 +1345,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)                
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     clear()
                     print
@@ -1285,7 +1359,7 @@ def frames ():
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     clear()
                     print
@@ -1299,7 +1373,7 @@ def frames ():
                     #new values
                     j = 'specifiedinfile'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m
+                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
                     confwrite(newconfig)
                     clear()
                     print
@@ -1355,6 +1429,8 @@ class read_conf_values(object):
         self.k = parser.get('asection', 'START_FRAME')
         self.l = parser.get('asection', 'END_FRAME')
         self.m = parser.get('asection', 'AVAILABILITY_ZONE')
+        self.n = parser.get('asection', 'FRAME_LIST_FILE')
+        self.o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
         #create new options
         self.a_nm = 'INSTANCE_TYPE='
         self.b_nm = 'BLENDER_PROJECT='
@@ -1369,6 +1445,8 @@ class read_conf_values(object):
         self.k_nm = 'START_FRAME='
         self.l_nm = 'END_FRAME='
         self.m_nm = 'AVAILABILITY_ZONE='
+        self.n_nm = 'FRAME_LIST_FILE='
+        self.o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
         self.z = '\n'
         os.chdir(bm)
 
@@ -1451,6 +1529,8 @@ def emptybuckets ():
     k = parser.get('asection', 'START_FRAME')
     l = parser.get('asection', 'END_FRAME')
     m = parser.get('asection', 'AVAILABILITY_ZONE')
+    n = parser.get('asection', 'FRAME_LIST_FILE')
+    o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
 
     #create new options
     a_nm = 'INSTANCE_TYPE='
@@ -1466,6 +1546,8 @@ def emptybuckets ():
     k_nm = 'START_FRAME='
     l_nm = 'END_FRAME='
     m_nm = 'AVAILABILITY_ZONE='
+    n_nm = 'FRAME_LIST_FILE='
+    o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
     z = '\n'
 
     projbucketname = urlparse.urlsplit(b).netloc
