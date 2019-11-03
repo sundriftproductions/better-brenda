@@ -441,6 +441,9 @@ def framelist():
     print "Going to use this file as the frame list:"
     print framelistfile
     print
+    with open(conf.n) as f:
+        totalframe = len(f.readline().strip().split(','))
+    print "This file has a total of " + totalframe + " frame(s)."
     exit = raw_input(' Press Enter to continue ')
 
 def prices():
@@ -590,13 +593,7 @@ def reviewjob():
                         timer(1)
                         break
 
-
-
-
-
-
 def instance():
-
     while True:
         clear()
         print
@@ -654,8 +651,13 @@ def instance():
 
         clear()
         conf = read_conf_values()
-        totalFrames = 1+int(conf.l)-int(conf.k)
-        print 
+
+        if conf.o == 'FRAME_RANGE':
+            totalFrames = 1 + int(conf.l) - int(conf.k)
+        else: # FRAME_LIST
+            with open(conf.n) as f:
+                totalFrames = len(f.readline().strip().split(','))
+
 	if totalFrames==1:
             print " You have selected only one frame to render."
         else:
