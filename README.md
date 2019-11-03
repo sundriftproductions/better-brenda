@@ -44,8 +44,10 @@ If you pick the "Upload already zipped archive" option, you still must select th
 Additional Notes
 ----------------
 
-* It is assumed that you have already installed and successfully run the original win_brenda_console application before trying this fork. In order to run this modified version of win_brenda_console, you must add a line to your .brenda.conf file before running this for the first time, otherwise you will encounter an error:
+* It is assumed that you have already installed and successfully run the original win_brenda_console application before trying this fork. In order to run this modified version of win_brenda_console, you must add these lines to your .brenda.conf file before running this for the first time, otherwise you will encounter an error:
 
 ```
 AVAILABILITY_ZONE=us_east-1c
-````
+FRAME_LIST_FILE=
+FRAME_LIST_OR_FRAME_RANGE=FRAME_RANGE
+```
