@@ -441,7 +441,7 @@ def framelist():
     print "Going to use this file as the frame list:"
     print framelistfile
     print
-    with open(conf.n) as f:
+    with open(framelistfile) as f:
         totalframes = len(f.readline().strip().split(','))
     print "This file has a total of " + str(totalframes) + " frame(s)."
     print
