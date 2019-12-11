@@ -1292,8 +1292,8 @@ def frames ():
                 if formatchoice=='p':
                     #new values
                     clear()
-                    frametemplateformat(sb+ff+sb+j+sb)
-                    subframetemplateformat(sb+ff+sb+j+sb)
+                    frametemplateformat(sb+ff+sb+'PNG'+sb)
+                    subframetemplateformat(sb+ff+sb+'PNG'+sb)
                     #write to file
                     conf_set_param('FILE_TYPE', 'PNG')
                     clear()
@@ -1304,8 +1304,8 @@ def frames ():
 
                 if formatchoice=='e':
                     clear()
-                    frametemplateformat(sb+ff+sb+j+sb)
-                    subframetemplateformat(sb+ff+sb+j+sb)
+                    frametemplateformat(sb+ff+sb+'EXR'+sb)
+                    subframetemplateformat(sb+ff+sb+'EXR'+sb)
                     #write to file
                     conf_set_param('FILE_TYPE', 'EXR')
                     clear()
@@ -1316,8 +1316,8 @@ def frames ():
 
                 if formatchoice=='j':
                     clear()
-                    frametemplateformat(sb+ff+sb+j+sb)
-                    subframetemplateformat(sb+ff+sb+j+sb)                
+                    frametemplateformat(sb+ff+sb+'JPEG'+sb)
+                    subframetemplateformat(sb+ff+sb+'JPEG'+sb)
                     #write to file
                     conf_set_param('FILE_TYPE', 'JPEG')
                     print
@@ -1327,8 +1327,8 @@ def frames ():
 
                 if formatchoice=='t':
                     clear()
-                    frametemplateformat(sb+ff+sb+j+sb)
-                    subframetemplateformat(sb+ff+sb+j+sb)
+                    frametemplateformat(sb+ff+sb+'TIFF'+sb)
+                    subframetemplateformat(sb+ff+sb+'TIFF'+sb)
                     #write to file
                     conf_set_param('FILE_TYPE', 'TIFF')
                     clear()
