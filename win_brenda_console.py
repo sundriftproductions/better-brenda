@@ -397,15 +397,11 @@ def workq():
         qconf = raw_input(' Are these values correct, y or n? ')  
         if qconf=='y':
             clear()
-            conf = read_conf_values()
-            #new values
-            k = sframe
-            l = eframe
-            o = 'FRAME_RANGE'
-            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+k+conf.z+conf.l_nm+l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+o
-            confwrite(newconfig)
+            conf_set_param('START_FRAME', sframe)
+            conf_set_param('END_FRAME', eframe)
+            conf_set_param('FRAME_LIST_OR_FRAME_RANGE', 'FRAME_RANGE')
             print
-            print ' Frame range changed ( '+k,'- '+l,')'
+            print ' Frame range changed (' + sframe + '-' + eframe + ')'
             spacetime()
             break
         if qconf=='n':
@@ -430,12 +426,8 @@ def framelist():
     framelistfile = askopenfilename(parent=root, title='Select your framelist text file')
     root.destroy()
 
-    conf = read_conf_values()
-    # new values
-    o = 'FRAME_LIST'
-    n = framelistfile
-    newconfig = conf.a_nm + conf.a + conf.z + conf.b_nm + conf.b + conf.z + conf.c_nm + conf.c + conf.z + conf.d_nm + conf.d + conf.z + conf.e_nm + conf.e + conf.z + conf.f_nm + conf.f + conf.z + conf.g_nm + conf.g + conf.z + conf.h_nm + conf.h + conf.z + conf.i_nm + conf.i + conf.z + conf.j_nm + conf.j + conf.z + conf.k_nm + conf.k + conf.z + conf.l_nm + conf.l + conf.z + conf.m_nm + conf.m + conf.z + conf.n_nm + n + conf.z + conf.o_nm + o
-    confwrite(newconfig)
+    conf_set_param('FRAME_LIST_OR_FRAME_RANGE', 'FRAME_LIST')
+    conf_set_param('FRAME_LIST_FILE', framelistfile)
 
     clear()
     print "Going to use this file as the frame list:"
@@ -695,18 +687,16 @@ def instance():
         iconf = raw_input(' Are these values correct, y or n? ')  
         if iconf=='y':
             clear()
-            conf = read_conf_values()
-            #new values
-            h = amount
-            a = instype
-            i = price
-            m = zonetype
-            newconfig = conf.a_nm+a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+h+conf.z+conf.i_nm+i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-            confwrite(newconfig)
+
+            conf_set_param('NUMBER_INSTANCES', amount)
+            conf_set_param('INSTANCE_TYPE', instype)
+            conf_set_param('PRICE_BID', price)
+            conf_set_param('AVAILABILITY_ZONE', zonetype)
+
             print
             print ' Instance information has been changed to'
             print
-            print ' '+h,'x '+a+' using availability zone '+m,'instances @ $'+i,'each per hour'
+            print ' ' + amount + ' x ' + instype + ' using availability zone ' + zonetype +' instances @ $' + price +' each per hour'
             spacetime()
             break
 
@@ -1244,12 +1234,10 @@ def frames ():
 
         if framechoice == 'w':
             clear()
-            #new values
-            f = 'frame'
-            g = 'non'
-            #write to file
-            newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-            confwrite(newconfig)
+
+            conf_set_param('FRAME_OR_SUBFRAME', 'frame')
+            conf_set_param('TILE', 'non')
+
             print
             print ' Changed to whole frame rendering'
             spacetime()
@@ -1267,37 +1255,25 @@ def frames ():
                 tilechoice = raw_input(' How many tiles will frames be split into? ')
                 clear()              
                 if tilechoice =='a':
-                    #new value
-                    f = 'subframe'
-                    g = '8'
-                    #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
+                    conf_set_param('FRAME_OR_SUBFRAME', 'subframe')
+                    conf_set_param('TILE', '8')
                     print
-                    print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
+                    print ' Changed to sub-frame rendering with 8x8 tile size'
                     spacetime()
                     break
 
                 if tilechoice =='b':
-                    #new value
-                    f = 'subframe'
-                    g = '4'
-                    #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
+                    conf_set_param('FRAME_OR_SUBFRAME', 'subframe')
+                    conf_set_param('TILE', '4')
                     print
-                    print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
+                    print ' Changed to sub-frame rendering with 4x4 tile size'
                     spacetime()
                     break
                 if tilechoice =='c':
-                    #new value
-                    f = 'subframe'
-                    g = '2'
-                    #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+f+conf.z+conf.g_nm+g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+conf.j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
+                    conf_set_param('FRAME_OR_SUBFRAME', 'subframe')
+                    conf_set_param('TILE', '2')
                     print
-                    print ' Changed to sub-frame rendering with '+g+x+g,'tile size'
+                    print ' Changed to sub-frame rendering with 2x2 tile size'
                     spacetime()
                     break
 
@@ -1315,69 +1291,57 @@ def frames ():
                 formatchoice = raw_input(' Enter the file format you wish frames to be rendered in? ')
                 if formatchoice=='p':
                     #new values
-                    j = 'PNG'
                     clear()
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
+                    conf_set_param('FILE_TYPE', 'PNG')
                     clear()
                     print
-                    print ' Changed frame format to '+j
+                    print ' Changed frame format to PNG'
                     spacetime()
                     break
 
                 if formatchoice=='e':
-                    j = 'EXR'
                     clear()
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
+                    conf_set_param('FILE_TYPE', 'EXR')
                     clear()
                     print
-                    print ' Changed frame format to '+j
+                    print ' Changed frame format to EXR'
                     spacetime()
                     break
 
                 if formatchoice=='j':
-                    j = 'JPEG'
                     clear()
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)                
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
-                    clear()
+                    conf_set_param('FILE_TYPE', 'JPEG')
                     print
-                    print ' Changed frame format to '+j
+                    print ' Changed frame format to JPEG'
                     spacetime()
                     break
 
                 if formatchoice=='t':
-                    j = 'TIFF'
                     clear()
                     frametemplateformat(sb+ff+sb+j+sb)
                     subframetemplateformat(sb+ff+sb+j+sb)
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
+                    conf_set_param('FILE_TYPE', 'TIFF')
                     clear()
                     print
-                    print ' Changed frame format to '+j
+                    print ' Changed frame format to TIFF'
                     spacetime()
                     break
 
                 if formatchoice=='f':
                     frametemplateformat(sb)
                     subframetemplateformat(sb)
-                    #new values
-                    j = 'specifiedinfile'
                     #write to file
-                    newconfig = conf.a_nm+conf.a+conf.z+conf.b_nm+conf.b+conf.z+conf.c_nm+conf.c+conf.z+conf.d_nm+conf.d+conf.z+conf.e_nm+conf.e+conf.z+conf.f_nm+conf.f+conf.z+conf.g_nm+conf.g+conf.z+conf.h_nm+conf.h+conf.z+conf.i_nm+conf.i+conf.z+conf.j_nm+j+conf.z+conf.k_nm+conf.k+conf.z+conf.l_nm+conf.l+conf.z+conf.m_nm+conf.m+conf.z+conf.n_nm+conf.n+conf.z+conf.o_nm+conf.o
-                    confwrite(newconfig)
+                    conf_set_param('FILE_TYPE', 'specifiedinfile')
                     clear()
                     print
                     print ' Changed to format specified in uploaded .blend file'
@@ -1390,7 +1354,7 @@ def frames ():
 def frametemplateformat(newformat):
     os.chdir(bm)
     fpart = 'blender -b *.blend --enable-autoexec'
-    lpart = '-o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a'
+    lpart = '-o $OUTDIR/###### -s $START -e $END -j $STEP -t 0 -a'
     file = open("frame-template", "w")
     file.write(fpart+newformat+lpart)
     file.close()
@@ -1450,7 +1414,6 @@ class read_conf_values(object):
         self.m_nm = 'AVAILABILITY_ZONE='
         self.n_nm = 'FRAME_LIST_FILE='
         self.o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
-        self.z = '\n'
         os.chdir(bm)
 
 
@@ -1463,7 +1426,32 @@ def confwrite(newconfig):
     file.close()
     os.chdir(bm)
 
+def compare_param_val(originalParamName, originalParamValue, desiredParamName, desiredParamValue):
+    retval = originalParamName
+    if (desiredParamName!=originalParamName.replace('=', '')):
+        retval += originalParamValue + '\n'
+    else:
+        retval += desiredParamValue + '\n'
+    return retval
 
+def conf_set_param(paramName, paramValue):
+    conf = read_conf_values()
+    newconfig = compare_param_val(conf.a_nm, conf.a, paramName, paramValue)
+    newconfig += compare_param_val(conf.b_nm, conf.b, paramName, paramValue)
+    newconfig += compare_param_val(conf.c_nm, conf.c, paramName, paramValue)
+    newconfig += compare_param_val(conf.d_nm, conf.d, paramName, paramValue)
+    newconfig += compare_param_val(conf.e_nm, conf.e, paramName, paramValue)
+    newconfig += compare_param_val(conf.f_nm, conf.f, paramName, paramValue)
+    newconfig += compare_param_val(conf.g_nm, conf.g, paramName, paramValue)
+    newconfig += compare_param_val(conf.h_nm, conf.h, paramName, paramValue)
+    newconfig += compare_param_val(conf.i_nm, conf.i, paramName, paramValue)
+    newconfig += compare_param_val(conf.j_nm, conf.j, paramName, paramValue)
+    newconfig += compare_param_val(conf.k_nm, conf.k, paramName, paramValue)
+    newconfig += compare_param_val(conf.l_nm, conf.l, paramName, paramValue)
+    newconfig += compare_param_val(conf.m_nm, conf.m, paramName, paramValue)
+    newconfig += compare_param_val(conf.n_nm, conf.n, paramName, paramValue)
+    newconfig += compare_param_val(conf.o_nm, conf.o, paramName, paramValue)
+    confwrite(newconfig)
 
 def resetworkqueue():
     os.chdir(bm)
@@ -1573,7 +1561,7 @@ def emptybuckets ():
     print
 
 
-def subframecreate ():
+def subframecreate():
     status = os.chdir(bm)
     subframe_template_there = os.path.isfile('subframe-template')
     if subframe_template_there == False:
