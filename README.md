@@ -169,7 +169,12 @@ P-Project: The name of the project
 	|	
 	|-> audio: The audio that will be used in the final video edit.
 	|	|-> music
-	|	|-> sfx
+	|	|	|-> [Sequence name]
+	|	|		|-> [Shot number]
+	|	|
+	|	|-> sfx: Sound effects
+	|	|	|-> [Sequence name]
+	|	|		|-> [Shot number]
 	|
 	|-> docs: Any documentation (spreadsheets, production diaries, credits, behind-the-scenes pictures) related to the project.
 	|
@@ -185,3 +190,5 @@ It is assumed that, when you select the .blend file to upload as part of a "good
 ```
 
 When you upload the .blend file from one of these directories, Better Brenda will not upload anything else from the directory; it will upload _only_ the .blend file you have selected. As mentioned previously, Better Brenda will also search through all of the directories marked with `(*)` above.
+
+To work with an actual example of the "good workflow" directory structure, copy the _support/P-Project_ directory to somewhere outside of your local repository and remove all of the files called _.gitkeep_. You can use this demo structure to upload a working Blender project via Better Brenda. The included demo .blend file, `P-Project\3D\scenes\SEQ\010\SEQ_010_v001.blend`, links to other objects in the folder structure. 
