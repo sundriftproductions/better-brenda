@@ -35,7 +35,7 @@ ZONE_BASE = 'us-east-1' # TODO: This should be pulled from a config file or from
 NOT_IN_PROJECT = "NOT IN PROJECT"
 start_time = datetime(1900,1,1)
 
-sys.path.insert(0, DIR_BRENDA_CODE+'/brenda')
+sys.path.insert(0, DIR_BRENDA_CODE + '/brenda')
 import ami
 
 
@@ -98,7 +98,7 @@ def amis ():
         print
         print ' a = Input your own AMI'
         print
-        print ' (Current AMI = '+ami.AMI_ID+')'
+        print ' (Current AMI = ' + ami.AMI_ID + ')'
         print
         print
         amiconf = raw_input(' Which task would you like to perform? ')
@@ -111,20 +111,20 @@ def amis ():
             ami_user = raw_input(' Enter the new public AMI you wish to use: ')
             clear()
             print
-            print ' Your new AMI will be changed to "'+ami_user+'"'
+            print ' Your new AMI will be changed to "' + ami_user + '"'
             print
             print
             amiconf = raw_input(' Do you want to continue? (y/n) ')
             if amiconf=='y':
                 clear()
-                os.chdir(DIR_BRENDA_CODE+'/brenda')
+                os.chdir(DIR_BRENDA_CODE + '/brenda')
                 file = open("ami.py", "w")
                 w = """# An AMI that contains Blender and Brenda (may be None)
 AMI_ID="""
-                file.write(w+'"'+ami_user+'"')
+                file.write(w + '"' + ami_user + '"')
                 file.close()
                 print
-                print " Changed AMI to "+ami_user
+                print " Changed AMI to " + ami_user
                 spacetime()
                 os.chdir(DIR_BRENDA_CODE)
                 break
@@ -264,7 +264,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             d = parser.get('asection', 'RENDER_OUTPUT')
 
             projbucketname = urlparse.urlsplit(b).netloc
-            projbucketpath = 's3://'+projbucketname
+            projbucketpath = 's3://' + projbucketname
             print
             print "projbucketpath: " + projbucketpath
 
@@ -277,14 +277,14 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             #deletes all old project files
             print
             print "Deleting all project files"
-            print 'python s3cmd del -r -f '+projbucketpath
-            status = os.system('python s3cmd del -r -f '+projbucketpath)
+            print 'python s3cmd del -r -f ' + projbucketpath
+            status = os.system('python s3cmd del -r -f ' + projbucketpath)
 
             #deletes all old frames
             print
             print "Deleting all old frames"
-            print 'python s3cmd del -r -f '+d
-            status = os.system('python s3cmd del -r -f '+d)
+            print 'python s3cmd del -r -f ' + d
+            status = os.system('python s3cmd del -r -f ' + d)
             print
             print " Files in project and frame buckets have been deleted"
 
@@ -301,7 +301,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             os.chdir(projfilepath)
             zipper = '.zip'
             projfilenamestripped = os.path.splitext(projfilename)[0]
-            zippedprojfilename = projfilenamestripped+zipper
+            zippedprojfilename = projfilenamestripped + zipper
 
             if (uploadtype == 0):
                 output = zipfile.ZipFile(zippedprojfilename, 'w')
@@ -418,8 +418,8 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             print "Changing to s3cmd working directory: " + DIR_PYTHON27_SCRIPTS
             os.chdir(DIR_PYTHON27_SCRIPTS)
             print
-            print 'python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+'/'+zippedprojfilename+'" '+projbucketpath
-            os.system('python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+'/'+zippedprojfilename+'" '+projbucketpath)
+            print 'python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "' + projfilepath + '/' + zippedprojfilename + '" ' + projbucketpath
+            os.system('python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "' + projfilepath+'/' + zippedprojfilename + '" ' + projbucketpath)
             print
             print ' Project file has been uploaded'
 
@@ -430,7 +430,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 os.chdir(projfilepath)
                 os.remove(zippedprojfilename)
 
-            conf_set_param('BLENDER_PROJECT', projbucketpath+'/'+zippedprojfilename)
+            conf_set_param('BLENDER_PROJECT', projbucketpath + '/' + zippedprojfilename)
 
             resetworkqueue()
             exit = raw_input(' Press Enter to continue ')
@@ -449,14 +449,14 @@ def workq():
         print
         eframe = raw_input(' Animation end frame? ')       
         clear()
-        totalFrames = 1+int(eframe)-int(sframe)
+        totalFrames = 1 + int(eframe)-int(sframe)
         print
-        print " Your animation starts at frame "+sframe,"and ends at frame "+eframe+"." 
+        print " Your animation starts at frame " + sframe + " and ends at frame " + eframe + "."
         print
         if totalFrames==1:
             print " One frame will be rendered."
         else:
-            print " A total of "+str(totalFrames)+" frames will be rendered."
+            print " A total of " + str(totalFrames) + " frames will be rendered."
         print
         qconf = raw_input(' Are these values correct? (y/n) ')
         if qconf=='y':
@@ -528,7 +528,7 @@ def reviewjob():
         intstartframe = int(conf.k)
         intendframe = int(conf.l)
         if conf.o == 'FRAME_RANGE':
-            totalframe = intendframe-intstartframe+1
+            totalframe = intendframe - intstartframe + 1
         else: # FRAME_LIST
             # Look at what we have in our frame list so we can see how many frames there are
             # as well as provide some example frame numbers.
@@ -541,7 +541,7 @@ def reviewjob():
                     if indx > 0:
                         textFrameList = textFrameList + ', '
                     textFrameList = textFrameList + frame
-                    indx=indx+1
+                    indx=indx + 1
                     if indx>4:
                         textFrameList = textFrameList + '...'
                         break
@@ -561,7 +561,7 @@ def reviewjob():
         print " %-25s %-15s" % ('Frame or sub-frame',conf.f)
         if conf.f == 'subframe':
             x = 'x'
-            print " %-25s %-15s" % ('Tile grid',conf.g+x+conf.g)
+            print " %-25s %-15s" % ('Tile grid',conf.g + x + conf.g)
         print " %-25s %-15s" % ('Frame format',conf.j)
         print " %-25s %-15s" % ('Instance type',conf.a)
         print " %-25s %-15s" % ('Availability zone',conf.m)
@@ -613,14 +613,14 @@ def reviewjob():
                 os.chdir(DIR_BRENDA_CODE)
                 if conf.f == 'frame':
                     if conf.o == 'FRAME_RANGE': # We have a normal range of frames, so we need to put a "push" at the end of this call
-                        queue = 'python brenda-work -T frame-template -s '+conf.k+' -e '+conf.l+' push'
+                        queue = 'python brenda-work -T frame-template -s ' + conf.k + ' -e ' + conf.l + ' push'
                     else: # FRAME_LIST
-                        queue = 'python brenda-work -T frame-template -f "'+conf.n+'" push_with_frame_script'
+                        queue = 'python brenda-work -T frame-template -f "' + conf.n + '" push_with_frame_script'
                 if conf.f == 'subframe':
                     if conf.o == 'FRAME_RANGE': # We have a normal range of frames, so we need to put a "push" at the end of this call
-                        queue = 'python brenda-work -T subframe-template -s '+conf.k+' -e '+conf.l+' -X '+conf.g+' -Y '+conf.g+' push'
+                        queue = 'python brenda-work -T subframe-template -s ' + conf.k + ' -e ' + conf.l + ' -X ' + conf.g + ' -Y ' + conf.g + ' push'
                     else: # FRAME_LIST
-                        queue = 'python brenda-work -T subframe-template -f "'+conf.n+'" -X '+conf.g+' -Y '+conf.g+' push_with_frame_script'
+                        queue = 'python brenda-work -T subframe-template -f "' + conf.n + '" -X ' + conf.g + ' -Y ' + conf.g + ' push_with_frame_script'
 
                 status = os.system(queue)
                 print '\n'
@@ -633,7 +633,7 @@ def reviewjob():
                 if status == 0:
                     print ' Work queue has been built'
                     print
-                    instrequest = 'python brenda-run -i '+conf.a+' -N '+conf.h+' -p '+conf.i+' spot -z '+conf.m
+                    instrequest = 'python brenda-run -i ' + conf.a + ' -N ' + conf.h + ' -p ' + conf.i + ' spot -z ' + conf.m
                     print instrequest
                     print '\n'
                     status = os.system(instrequest)
@@ -721,21 +721,21 @@ def instance():
 	if totalFrames==1:
             print " You have selected only one frame to render."
         else:
-            print " You have selected a total of "+str(totalFrames)+" frames to render."
+            print " You have selected a total of " + str(totalFrames) + " frames to render."
         print
 
 	if conf.f=='subframe':
             totalNumOfInstances = totalFrames * int(conf.g) * int(conf.g)
 	    amtPerHour = totalNumOfInstances * float(price)
-	    print " You have selected subframe rendering ("+conf.g+"x"+conf.g+")."
+	    print " You have selected subframe rendering (" + conf.g + "x" + conf.g + ")."
             print 
-            print " For the fastest possible rendering time, use a total of "+str(totalNumOfInstances)+" instances ($"+price+" per instance, $"+str(amtPerHour)+" an hour)."
+            print " For the fastest possible rendering time, use a total of " + str(totalNumOfInstances) + " instances ($" + price + " per instance, $" + str(amtPerHour) + " an hour)."
         else:
             totalNumOfInstances = totalFrames
 	    amtPerHour = totalNumOfInstances * float(price)
             print " You have selected whole frame rendering."
             print 
-            print " For the fastest possible rendering time, use a total of "+str(totalNumOfInstances)+" instances ($"+price+" per instance, $"+str(amtPerHour)+" an hour)."
+            print " For the fastest possible rendering time, use a total of " + str(totalNumOfInstances) + " instances ($" + price + " per instance, $" + str(amtPerHour) + " an hour)."
 	print 
 	print 
         amount = raw_input(' How many instances would you like to initiate? ')
@@ -748,7 +748,7 @@ def instance():
         amountD = Decimal(amount)
         priceD = Decimal(price)
         math = (amountD*priceD)
-        print ' This will cost you $'+ str(math), 'per hour'
+        print ' This will cost you $' + str(math) + ' per hour.'
         print
         print
         iconf = raw_input(' Are these values correct? (y/n) ')
@@ -763,7 +763,7 @@ def instance():
             print
             print ' Instance information has been changed to'
             print
-            print ' ' + amount + ' x ' + instype + ' using availability zone ' + zonetype +' instances @ $' + price +' each per hour'
+            print ' ' + amount + ' x ' + instype + ' using availability zone ' + zonetype +' instances @ $' + price + ' each per hour'
             spacetime()
             break
 
@@ -912,9 +912,9 @@ def monmenu ():
                     inprunet = raw_input(' How many instances would you like to reduce the farm to? ')
                     clear()
                     if dry =='y':
-                        close = 'python brenda-tool -T -d -t '+uptime+' prune '+inprunet
+                        close = 'python brenda-tool -T -d -t ' + uptime + ' prune ' + inprunet
                     if dry =='n':
-                        close = 'python brenda-tool -T -t '+uptime+' prune '+inprunet
+                        close = 'python brenda-tool -T -t ' + uptime + ' prune ' + inprunet
                     os.system(close)
                     print
                     exit = raw_input(' Press Enter to continue ')
@@ -926,9 +926,9 @@ def monmenu ():
                     inprune = raw_input(' How many instances would you like to reduce the farm to? ')
                     clear()
                     if dry =='y':
-                        close2 = 'python brenda-tool -T -d prune '+inprune
+                        close2 = 'python brenda-tool -T -d prune ' + inprune
                     if dry =='n':
-                        close2 = 'python brenda-tool -T prune '+inprune
+                        close2 = 'python brenda-tool -T prune ' + inprune
                     os.system(close2)
                     print
                     exit = raw_input(' Press Enter to continue ')
@@ -987,7 +987,7 @@ def downmenu ():
             cp.readfp(FakeSecHead(open('.brenda.conf')))
             RENDER_OUTPUT = cp.get('asection', 'RENDER_OUTPUT')      
             status = os.chdir(DIR_PYTHON27_SCRIPTS)
-            status = os.system('python s3cmd get -r --skip-existing '+RENDER_OUTPUT+' '+dir)
+            status = os.system('python s3cmd get -r --skip-existing ' + RENDER_OUTPUT + ' ' + dir)
             clear()
             print
             print " Frames have been downloaded"
@@ -1018,16 +1018,16 @@ def downmenu ():
             try:
                 while True:
                     print
-                    print " Checking for new frames every "+tinterval,"minutes"
+                    print " Checking for new frames every " + tinterval + " minutes"
                     print
                     print """ Press "control-c" to stop regular download and return"""
                     print
                     status = os.chdir(DIR_PYTHON27_SCRIPTS)
-                    status = os.system('python s3cmd get -r --skip-existing '+RENDER_OUTPUT+' '+dir)
+                    status = os.system('python s3cmd get -r --skip-existing ' + RENDER_OUTPUT + ' ' + dir)
                     status = os.chdir(DIR_BRENDA_CODE)
                     clear()
                     print
-                    print " Checking for new frames every "+tinterval,"minutes"
+                    print " Checking for new frames every " + tinterval + " minutes"
                     print
                     print """ Press "control-c" to stop regular download and return"""
                     print
@@ -1147,19 +1147,19 @@ def cancelmenu ():
 def inidup ():
     from os.path import expanduser
     home = expanduser("~")
-    s3cmd_there = os.path.isfile(home+DIR_APPDATA_ROAMING+FILE_INI_FILE)
+    s3cmd_there = os.path.isfile(home + DIR_APPDATA_ROAMING + FILE_INI_FILE)
     if s3cmd_there == False:
         clear()
-        shutil.copyfile(home+'/'+EXTENSION_S3CFG, home+DIR_APPDATA_ROAMING+EXTENSION_S3CFG)
-        os.rename(home+DIR_APPDATA_ROAMING+EXTENSION_S3CFG, home+DIR_APPDATA_ROAMING+FILE_INI_FILE)
+        shutil.copyfile(home + '/' + EXTENSION_S3CFG, home + DIR_APPDATA_ROAMING + EXTENSION_S3CFG)
+        os.rename(home + DIR_APPDATA_ROAMING + EXTENSION_S3CFG, home + DIR_APPDATA_ROAMING + FILE_INI_FILE)
 
 #This changes a line in the "tool.py" file as new Ubuntu AMIs only let you ssh in as "ubuntu" and not "tool" whereas old Ubuntu AMIs let you log in as both
 def toolchange():
     x = 'tool.py'
-    with open(DIR_BRENDA_CODE+'/brenda/'+x, 'r') as file:
+    with open(DIR_BRENDA_CODE + '/brenda/' + x, 'r') as file:
         data = file.readlines()
     data[73] = """                user = utils.get_opt(opts.user, conf, 'AWS_USER', default='ubuntu')\n"""
-    with open(DIR_BRENDA_CODE+'/brenda/'+x, 'w') as file:
+    with open(DIR_BRENDA_CODE + '/brenda/' + x, 'w') as file:
         file.writelines( data )
 
 def instancemenu ():
@@ -1560,26 +1560,26 @@ def emptybuckets ():
     d = parser.get('asection', 'RENDER_OUTPUT')
 
     projbucketname = urlparse.urlsplit(b).netloc
-    projbucketpath = 's3://'+projbucketname
+    projbucketpath = 's3://' + projbucketname
 
     #changes to s3cmd working directory
     os.chdir(DIR_PYTHON27_SCRIPTS)
 
     #deletes all old project files
     print
-    print 'python s3cmd del -r -f '+projbucketpath
-    status = os.system('python s3cmd del -r -f '+projbucketpath)
+    print 'python s3cmd del -r -f ' + projbucketpath
+    status = os.system('python s3cmd del -r -f ' + projbucketpath)
 
     #deletes all old frames
     print
-    print 'python s3cmd del -r -f '+d
-    status = os.system('python s3cmd del -r -f '+d)
+    print 'python s3cmd del -r -f ' + d
+    status = os.system('python s3cmd del -r -f ' + d)
     print
     print " Files in project and frame buckets have been deleted"
     print
 
 def printspotrequest(spinstype):
-    spotrequest = 'python brenda-run -i '+spinstype+' price'
+    spotrequest = 'python brenda-run -i ' + spinstype + ' price'
     status = os.system(spotrequest)
     print
 
