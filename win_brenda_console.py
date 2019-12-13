@@ -26,59 +26,20 @@ def menerror():
  
 clear = lambda: os.system('cls')
 
-ft = 'frame-template '
-sft = 'subframe-template '
-strt = '-s '
-end = '-e '
-pu = 'push'
-push_with_frame_script='push_with_frame_script'
-frame_script = '-f '
-sb = ' '
-i = '-i '
-n = '-N '
-p = '-p '
-zFlag = '-z '
-spot = 'spot'
-spotprice = 'price'
-
-py = 'python '
-bw = 'brenda-work '
-br = 'brenda-run '
-bt = 'brenda-tool '
-sh = 'ssh '
-ut = 'uptime '
-st = 'status'
-pf = 'perf'
-tc = 'cat task-count'
-tl = 'tail /mnt/brenda/log'
-pru = 'prune '
-smlt = '-t '
-dflag = '-d '
-xsize = '-X '
-ysize = '-Y '
-
-rs = 'reset'
-t = '-T '
-sp = 'stop'
-ca = 'cancel'
-bm = 'c:/brenda-master'
-ps = 'c:/Python27/Scripts'
-ap = '/AppData/Roaming/'
-ini = 's3cmd.ini'
-sl = '/'
-scf = '.s3cfg'
-brenda = 'brenda'
-q = '"'
-ff = '-F'
-zonebase = 'us-east-1' # TODO: This should be pulled from a config file or from a Brenda command response so it's not tied to a particular region
-
+DIR_BRENDA_CODE = 'c:/brenda-master'
+DIR_PYTHON27_SCRIPTS = 'c:/Python27/Scripts'
+DIR_APPDATA_ROAMING = '/AppData/Roaming/'
+FILE_INI_FILE = 's3cmd.ini'
+EXTENSION_S3CFG = '.s3cfg'
+ZONE_BASE = 'us-east-1' # TODO: This should be pulled from a config file or from a Brenda command response so it's not tied to a particular region
+NOT_IN_PROJECT = "NOT IN PROJECT"
 start_time = datetime(1900,1,1)
 
-sys.path.insert(0, bm+sl+brenda)
+sys.path.insert(0, DIR_BRENDA_CODE+'/brenda')
 import ami
 
 
-os.chdir(bm)
+os.chdir(DIR_BRENDA_CODE)
 
 
 
@@ -150,22 +111,22 @@ def amis ():
             ami_user = raw_input(' Enter the new public AMI you wish to use: ')
             clear()
             print
-            print ' Your new AMI will be changed to '+q+ami_user+q
+            print ' Your new AMI will be changed to "'+ami_user+'"'
             print
             print
             amiconf = raw_input(' Do you want to continue, type y or n? ') 
             if amiconf=='y':
                 clear()
-                os.chdir(bm+sl+brenda)
+                os.chdir(DIR_BRENDA_CODE+'/brenda')
                 file = open("ami.py", "w")
                 w = """# An AMI that contains Blender and Brenda (may be None)
 AMI_ID="""
-                file.write(w+q+ami_user+q)
+                file.write(w+'"'+ami_user+'"')
                 file.close()
                 print
                 print " Changed AMI to "+ami_user
                 spacetime()
-                os.chdir(bm)
+                os.chdir(DIR_BRENDA_CODE)
                 break
             if amiconf=='n':
                 clear()
@@ -197,6 +158,26 @@ def nprojexternal():
     projfilepath = os.path.dirname(os.path.abspath(projfile))
     uploadproject(projfilename, projfilepath, 1)
 
+def nprojworkflow():
+    clear()
+    print
+    print 'Select your Blender project file.\n'
+    print 'Your project must meet the following criteria:\n'
+    print ' * Have a filename with a 3-character scene followed by an underscore followed by a 3-character shot number.'
+    print '   (e.g. "SEQ_010.blend", "SEQ_020_v002.blend", "PAR_001_anything_goes_here.blend")\n'
+    print ' * Use relative file paths.\n'
+    print ' * Have a project folder structure as outlined in the "good workflow" document.\n'
+    print ' * The project file must be located inside this directory:'
+    print '   [project directory]/3D/scenes/[3 character scene]/[3 character shot number]/'
+    time.sleep(1)
+    root = Tk()
+    root.withdraw()
+    projfile = askopenfilename(parent=root, title='Select your Blender project file')
+    root.destroy()
+    projfilename = os.path.basename(os.path.abspath(projfile))
+    projfilepath = os.path.dirname(os.path.abspath(projfile))
+    uploadproject(projfilename, projfilepath, 3)
+
 def nprojzipped():
     clear()
     print
@@ -210,33 +191,64 @@ def nprojzipped():
     projfilepath = os.path.dirname(os.path.abspath(projfile))
     uploadproject(projfilename, projfilepath, 2)
 
+def get_subdirectories(absolute_project_directory, relative_subdirectory, is_sequence_directory = False):
+    # Returns a list of local subdirectories where we need to non-recursively zip up all of the files.
+    # We ignore any directories called "not in project".
+    # relative_subdirectory should not start with a backslash.
+    # If is_sequence_directory = True then we will not pull in ANY 3-numbered directories, but we'll pull in all of
+    # the other directories.
+    retval = []
+    source_dir = os.path.abspath(os.path.join(absolute_project_directory, relative_subdirectory))
+    for root, dirs, files in os.walk(source_dir):
+        # add directory (needed for empty dirs)
+        for dir in dirs:
+            # Get a stripped down version of the entire path for testing. All we care about is whether
+            # NOT_IN_PROJECT is in the string from the absolute_project_directory onwards; it is legal
+            # to have a path like c:\not in project\P-Project\3D\assets\env etc.
+            # It is also legal to have a path like c:\P-Project\3D\assets\not in project but it really is\stuff
+            full_path = os.path.join(root, dir)
+            relative_path = full_path[len(source_dir):]
+            if (dir.strip().upper() != NOT_IN_PROJECT and '\\' + NOT_IN_PROJECT + '\\' not in relative_path.upper()):
+                # OK, at least we know that NOT_IN_PROJECT isn't here. Let's also check for 3-numbered directories, if needed.
+                # Note that there is a special case that we need to prepare for -- if we're in a sequence directory and there's
+                # a number directory under that (which we don't want to pick up), but under that number directory there's a
+                # non-number directory -- for dir in dirs will pick up ALL of those directories, so we need to prevent that.
+                beginning_of_relative_path = relative_path.split('\\')[1]
+                if (is_sequence_directory == False) or \
+                        not (is_sequence_directory == True and len(beginning_of_relative_path) == 3 and beginning_of_relative_path.isdigit() == True):
+                    retval.append(os.path.join(relative_subdirectory, relative_path[1:])) # We need to strip the leading backslash from relative_path, otherwise os.path.join won't work
+    return retval
 
 def uploadproject(projfilename, projfilepath, uploadtype):
     # uploadtype = 0: Uploading just a project file
     #            = 1: Uploading a project file and we will include everything in the "/artwork/in project" directory
     #            = 2: Uploading an already zipped archive
+    #            = 3: Uploading a project file with "good workflow" folder structure plus external artwork files
     while True:
         clear()
         print
-        print " ***WARNING***"
+        print ' ***WARNING***'
         print
         print
-        print " This will..."
+        print ' This will...'
         print
         print
-        print " 1. delete all files in your frame and project buckets"
+        print ' 1. Delete all of the files in your frame and project buckets.'
         print
         if (uploadtype == 1):
-            print " 2. zip and upload "+projfilename+' as well as any files in the "artwork/in project" directory'
+            print ' 2. Upload ' + projfilename + ' as well as any files in the "artwork/in project" directory.'
         elif (uploadtype == 2):
-            print " 2. upload the already-zipped archive "+projfilename
+            print ' 2. Upload the already-zipped archive ' + projfilename
+        elif (uploadtype == 3):
+            print ' 2. Upload the project file ' + projfilename + ' as well as any external files determined by the "good workflow"'
+            print '    folder structure.'
         else:
-            print " 2. zip and upload "+projfilename
+            print ' 2. Upload ' + projfilename
         print
-        print " 3. reset work queue"
+        print ' 3. Reset the work queue.'
         print
         print
-        nprojconf = raw_input(' Do you want to continue, type y or n? ')
+        nprojconf = raw_input(' Do you want to continue? (y/n) ')
         if nprojconf=='y':
             clear()
 
@@ -247,39 +259,8 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             parser = ConfigParser.ConfigParser()
             parser.readfp(FakeSecHead(open('.brenda.conf')))
             #find original values
-            a = parser.get('asection', 'INSTANCE_TYPE')
             b = parser.get('asection', 'BLENDER_PROJECT')
-            c = parser.get('asection', 'WORK_QUEUE')
             d = parser.get('asection', 'RENDER_OUTPUT')
-            e = parser.get('asection', 'DONE')
-            f = parser.get('asection', 'FRAME_OR_SUBFRAME')
-            g = parser.get('asection', 'TILE')
-            h = parser.get('asection', 'NUMBER_INSTANCES')
-            i = parser.get('asection', 'PRICE_BID')
-            j = parser.get('asection', 'FILE_TYPE')
-            k = parser.get('asection', 'START_FRAME')
-            l = parser.get('asection', 'END_FRAME')
-            m = parser.get('asection', 'AVAILABILITY_ZONE')
-            n = parser.get('asection', 'FRAME_LIST_FILE')
-            o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
-
-            #create new options
-            a_nm = 'INSTANCE_TYPE='
-            b_nm = 'BLENDER_PROJECT='
-            c_nm = 'WORK_QUEUE='
-            d_nm = 'RENDER_OUTPUT='
-            e_nm = 'DONE='
-            f_nm = 'FRAME_OR_SUBFRAME='
-            g_nm = 'TILE='
-            h_nm = 'NUMBER_INSTANCES='
-            i_nm = 'PRICE_BID='
-            j_nm = 'FILE_TYPE='
-            k_nm = 'START_FRAME='
-            l_nm = 'END_FRAME='
-            m_nm = 'AVAILABILITY_ZONE='
-            n_nm = 'FRAME_LIST_FILE='
-            o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
-            z = '\n'
 
             projbucketname = urlparse.urlsplit(b).netloc
             projbucketpath = 's3://'+projbucketname
@@ -288,8 +269,8 @@ def uploadproject(projfilename, projfilepath, uploadtype):
 
             #changes to s3cmd working directory
             print
-            print "Changing to s3cmd working directory: " + ps
-            os.chdir(ps)
+            print "Changing to s3cmd working directory: " + DIR_PYTHON27_SCRIPTS
+            os.chdir(DIR_PYTHON27_SCRIPTS)
 
 
             #deletes all old project files
@@ -321,7 +302,13 @@ def uploadproject(projfilename, projfilepath, uploadtype):
             projfilenamestripped = os.path.splitext(projfilename)[0]
             zippedprojfilename = projfilenamestripped+zipper
 
-            if (uploadtype == 1):
+            if (uploadtype == 0):
+                output = zipfile.ZipFile(zippedprojfilename, 'w')
+                output.write(projfilename)
+                output.close()
+                print zippedprojfilename + " has been created"
+                print
+            elif (uploadtype == 1):
                 # Grab everything in the relative "artwork/in project" directory and zip it up.
                 source_dir = projfilepath + "\\artwork\\in project\\"
                 relroot = os.path.abspath(os.path.join(source_dir, os.pardir))
@@ -337,18 +324,120 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                                 output.write(filename, arcname)
                 print zippedprojfilename + " has been created"
                 print
-            elif (uploadtype == 0):
-                output = zipfile.ZipFile(zippedprojfilename, 'w')
-                output.write(projfilename)
-                output.close()
+            # Note we don't check if uploadtype == 2, because the file is already zipped.
+            elif (uploadtype == 3): # GOOD_WORKFLOW_ZIP.
+                # Here's how GOOD_WORKFLOW_ZIP works:
+                #   * "ALL" is a reserved sequence name. We pull in everything from an "ALL" sequence directory.
+                #   * We assume the initial blend file was in "P-Project\3D\scenes\SEQ\010\" and will
+                #     grab the Blender file ONLY from this directory. If there is anything else in this directory
+                #    (artwork directory, other files), we just ignore it.
+                #   * We assume the two directories prior to the Blender file represent the sequence and shot
+                #     directories, and we will look for things with the same sequence and shot directories.
+                #   * When we look in a sequence directory, we ignore any directories that have a three number value
+                #     (we don't want to pull in any other shots) but we DO pull in all of the other directories (except
+                #     for any directory that says "not in project"). We pull in all files in a sequence directory.
+                #   * We look in the following directories and recursively pull in EVERYTHING in them, but we do not
+                #     pull in any directory called "not in project".
+                #       - P-Project\3D\assets\env\ALL\
+                #       - P-Project\3D\assets\env\SEQ\
+                #       - P-Project\3D\assets\env\SEQ\010\
+                #       - P-Project\3D\assets\models\ALL\
+                #       - P-Project\3D\assets\models\SEQ\
+                #       - P-Project\3D\assets\models\SEQ\010\
+                #       - P-Project\3D\assets\rigs\ALL\
+                #       - P-Project\3D\assets\rigs\SEQ\
+                #       - P-Project\3D\assets\rigs\SEQ\010\
+                #       - P-Project\3D\assets\worlds\ALL\
+                #       - P-Project\3D\assets\worlds\SEQ\
+                #       - P-Project\3D\assets\worlds\SEQ\010\
+
+                # Let's determine the sequence and shot number, based on the directory structure.
+                path_list = projfilepath.split(os.sep)
+                if (len(path_list) < 2):
+                    print "There was an error parsing the project file path."
+                    break
+                sequence_name = path_list[-2]
+                shot_number = path_list[-1]
+                print 'Sequence name: ' + sequence_name
+                print '       Shot #: ' + shot_number
+
+                # Find all of the paths.
+                all_paths = []
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\env\\ALL', os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\env\\' + sequence_name, os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\env\\' + sequence_name + '\\' + shot_number, os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\models\\ALL', os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\models\\' + sequence_name, os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\models\\' + sequence_name + '\\' + shot_number, os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\rigs\\ALL', os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\rigs\\' + sequence_name, os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\rigs\\' + sequence_name + '\\' + shot_number, os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\worlds\\ALL', os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\worlds\\' + sequence_name, os.pardir)))
+                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\worlds\\' + sequence_name + '\\' + shot_number, os.pardir)))
+
+                # Let's figure out the root of the project. The typical projfilepath path would be like this...
+                #   D:\video\P-Project\3D\scenes\SEQ\010\
+                # ...and we'd want to grab this as the root:
+                #   D:\video\P-Project\
+                # So we need to take the root and go up four directories.
+                abs_project_path = os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..', os.pardir))
+                directories_to_zip = []
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\env\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\env\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\env\\' + sequence_name + '\\' + shot_number)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\models\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\models\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\models\\' + sequence_name + '\\' + shot_number)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\rigs\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\rigs\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\rigs\\' + sequence_name + '\\' + shot_number)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\worlds\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\worlds\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\worlds\\' + sequence_name + '\\' + shot_number)
+
+                print directories_to_zip
+
+                exit = raw_input(' Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+                # TODO: PICK UP HERE!!!!!!!!!!!!!!!!!!!!
+
+                with zipfile.ZipFile(zippedprojfilename, "w", zipfile.ZIP_DEFLATED) as output:
+                    output.write(projfilename)
+                    for root, dirs, files in os.walk(source_dir):
+                        # add empty dirs
+                        output.write(root, "3D\\assets\\env\\ALL")
+
+                        #       - 3D\assets\env\ALL\
+                        #       - P-Project\3D\assets\env\SEQ\
+                        #       - P-Project\3D\assets\env\SEQ\010\
+                        #       - P-Project\3D\assets\models\ALL\
+                        #       - P-Project\3D\assets\models\SEQ\
+                        #       - P-Project\3D\assets\models\SEQ\010\
+                        #       - P-Project\3D\assets\rigs\ALL\
+                        #       - P-Project\3D\assets\rigs\SEQ\
+                        #       - P-Project\3D\assets\rigs\SEQ\010\
+                        #       - P-Project\3D\assets\worlds\ALL\
+                        #       - P-Project\3D\assets\worlds\SEQ\
+                        #       - P-Project\3D\assets\worlds\SEQ\010\
+
+                        # add directory (needed for empty dirs)
+                        output.write(root, "artwork\\" + os.path.relpath(root, relroot))
+                        for file in files:
+                            filename = os.path.join(root, file)
+                            if os.path.isfile(filename):  # regular files only
+                                arcname = os.path.join("artwork\\" + os.path.relpath(root, relroot), file)
+                                output.write(filename, arcname)
                 print zippedprojfilename + " has been created"
                 print
+                exit = raw_input(' Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            print "Changing to s3cmd working directory: " + ps
-            os.chdir(ps)
+            print "Changing to s3cmd working directory: " + DIR_PYTHON27_SCRIPTS
+            os.chdir(DIR_PYTHON27_SCRIPTS)
             print
-            print 'python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+sl+zippedprojfilename+'" '+sb+projbucketpath
-            os.system('python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+sl+zippedprojfilename+'" '+sb+projbucketpath)
+            print 'python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+'/'+zippedprojfilename+'" '+projbucketpath
+            os.system('python s3cmd put --no-mime-magic --multipart-chunk-size-mb=5 "'+projfilepath+'/'+zippedprojfilename+'" '+projbucketpath)
             print
             print ' Project file has been uploaded'
 
@@ -359,15 +448,12 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 os.chdir(projfilepath)
                 os.remove(zippedprojfilename)
 
-            #changes reference in config file
-            home = expanduser("~")
-            os.chdir(home)
-            file = open(".brenda.conf", "w")
-            b = projbucketpath+sl+zippedprojfilename
-            newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m+z+n_nm+n+z+o_nm+o
-            file.write(newconfig)
-            file.close()
-            #status = os.chdir(bm)
+            conf_set_param('BLENDER_PROJECT', projbucketpath+'/'+zippedprojfilename)
+            if (uploadtype == 2):
+                conf_set_param('REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP', 'GOOD_WORKFLOW_ZIP')
+            else:
+                conf_set_param('REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP', 'REGULAR_ZIP')
+
             resetworkqueue()
             exit = raw_input(' Press Enter to continue ')
 	    clear()
@@ -543,17 +629,17 @@ def reviewjob():
 
             if doublerconf == 'y':
                 clear()
-                os.chdir(bm)
+                os.chdir(DIR_BRENDA_CODE)
                 if conf.f == 'frame':
                     if conf.o == 'FRAME_RANGE': # We have a normal range of frames, so we need to put a "push" at the end of this call
-                        queue = py+bw+t+ft+strt+conf.k+sb+end+conf.l+sb+pu
+                        queue = 'python brenda-work -T frame-template -s '+conf.k+' -e '+conf.l+' push'
                     else: # FRAME_LIST
-                        queue = py+bw+t+ft+frame_script+'"'+conf.n+'"'+sb+push_with_frame_script
+                        queue = 'python brenda-work -T frame-template -f "'+conf.n+'" push_with_frame_script'
                 if conf.f == 'subframe':
                     if conf.o == 'FRAME_RANGE': # We have a normal range of frames, so we need to put a "push" at the end of this call
-                        queue = py+bw+t+sft+strt+conf.k+sb+end+conf.l+sb+xsize+conf.g+sb+ysize+conf.g+sb+pu
+                        queue = 'python brenda-work -T subframe-template -s '+conf.k+' -e '+conf.l+' -X '+conf.g+' -Y '+conf.g+' push'
                     else: # FRAME_LIST
-                        queue = py+bw+t+sft+frame_script+'"'+conf.n+'"'+sb+xsize+conf.g+sb+ysize+conf.g+sb+push_with_frame_script
+                        queue = 'python brenda-work -T subframe-template -f "'+conf.n+'" -X '+conf.g+' -Y '+conf.g+' push_with_frame_script'
 
                 status = os.system(queue)
                 print '\n'
@@ -566,7 +652,7 @@ def reviewjob():
                 if status == 0:
                     print ' Work queue has been built'
                     print
-                    instrequest = py+br+i+conf.a+sb+n+conf.h+sb+p+conf.i+sb+spot+' '+zFlag+conf.m
+                    instrequest = 'python brenda-run -i '+conf.a+' -N '+conf.h+' -p '+conf.i+' spot -z '+conf.m
                     print instrequest
                     print '\n'
                     status = os.system(instrequest)
@@ -631,12 +717,12 @@ def instance():
         print
         printspotrequest(instype)
         print
-        print " a = " + zonebase + "a"
-        print " b = " + zonebase + "b"
-        print " c = " + zonebase + "c"
-        print " d = " + zonebase + "d"
-        print " e = " + zonebase + "e"
-        print " f = " + zonebase + "f"
+        print " a = " + ZONE_BASE + "a"
+        print " b = " + ZONE_BASE + "b"
+        print " c = " + ZONE_BASE + "c"
+        print " d = " + ZONE_BASE + "d"
+        print " e = " + ZONE_BASE + "e"
+        print " f = " + ZONE_BASE + "f"
         print
         zone = raw_input(' Which availability zone would you like to use? ')
         print
@@ -674,9 +760,9 @@ def instance():
         amount = raw_input(' How many instances would you like to initiate? ')
 
         clear()
-        zonetype = zonebase + zone
+        zonetype = ZONE_BASE + zone
         print
-        print " You are bidding for "+amount,"X"+sb+instype,"in availability zone "+zonetype,"at a cost of $"+price,"per instance."
+        print " You are bidding for " + amount + " x " + instype + " in availability zone " + zonetype + " at a cost of $" + price + " per instance."
         print
         amountD = Decimal(amount)
         priceD = Decimal(price)
@@ -712,7 +798,7 @@ def instance():
 def setupmenu ():
     while True:
         clear()
-        status = os.chdir(bm)
+        status = os.chdir(DIR_BRENDA_CODE)
         setupmenuoptions()
         setuptask = raw_input(' Which task would you like to perform? ')    
         if setuptask=='m':
@@ -755,7 +841,7 @@ def monmenu ():
     global start_time
     while True:
         clear()
-        status = os.chdir(bm)
+        status = os.chdir(DIR_BRENDA_CODE)
         monmenuoptions()
         montask = raw_input(' Which task would you like to perform? ')   
         if montask=='t':           
@@ -769,21 +855,21 @@ def monmenu ():
         if montask=='w':  
             clear()
             print
-            status = os.system(py+bw+st)      
+            status = os.system('python brenda-work status')
             print
             print
             exit = raw_input(' Press Enter to continue ')
         if montask=='r':  
             clear()
             print
-            os.system(py+br+st)     
+            os.system('python brenda-run status')
             print
             print
             exit = raw_input(' Press Enter to continue ')
         if montask=='u':           
             clear()
             print
-            os.system(py+bt+sh+ut)      
+            os.system('python brenda-tool ssh uptime ')
             print
             print
             exit = raw_input(' Press Enter to continue ')
@@ -791,7 +877,7 @@ def monmenu ():
             clear()
             while True:
                 print
-                os.system(py+bt+sh+tl)
+                os.system('python brenda-tool ssh tail /mnt/brenda/log')
                 print
                 logInput = raw_input(' Enter m to go back to the previous menu, otherwise press Enter to get more of the log.')
                 if logInput == 'm':
@@ -799,14 +885,14 @@ def monmenu ():
         if montask=='f':
             clear()
             print
-            os.system(py+bt+pf)    
+            os.system('python brenda-tool perf')
             print  
             print
             exit = raw_input(' Press Enter to continue ')
         if montask=='c':           
             clear()
             print
-            os.system(py+bt+sh+tc)      
+            os.system('python brenda-tool ssh cat task-count')
             print
             print
             exit = raw_input(' Press Enter to continue ')
@@ -845,9 +931,9 @@ def monmenu ():
                     inprunet = raw_input(' How many instances would you like to reduce the farm to? ')
                     clear()
                     if dry =='y':
-                        close = py+bt+t+dflag+smlt+uptime+sb+pru+inprunet
+                        close = 'python brenda-tool -T -d -t '+uptime+' prune '+inprunet
                     if dry =='n':
-                        close = py+bt+t+smlt+uptime+sb+pru+inprunet
+                        close = 'python brenda-tool -T -t '+uptime+' prune '+inprunet
                     os.system(close)
                     print
                     exit = raw_input(' Press Enter to continue ')
@@ -859,9 +945,9 @@ def monmenu ():
                     inprune = raw_input(' How many instances would you like to reduce the farm to? ')
                     clear()
                     if dry =='y':
-                        close2 = py+bt+t+dflag+pru+inprune
+                        close2 = 'python brenda-tool -T -d prune '+inprune
                     if dry =='n':
-                        close2 = py+bt+t+pru+inprune
+                        close2 = 'python brenda-tool -T prune '+inprune
                     os.system(close2)
                     print
                     exit = raw_input(' Press Enter to continue ')
@@ -919,15 +1005,15 @@ def downmenu ():
             cp = ConfigParser.SafeConfigParser()
             cp.readfp(FakeSecHead(open('.brenda.conf')))
             RENDER_OUTPUT = cp.get('asection', 'RENDER_OUTPUT')      
-            status = os.chdir(ps)
-            status = os.system('python s3cmd get -r --skip-existing '+RENDER_OUTPUT+sb+dir)
+            status = os.chdir(DIR_PYTHON27_SCRIPTS)
+            status = os.system('python s3cmd get -r --skip-existing '+RENDER_OUTPUT+' '+dir)
             clear()
             print
             print " Frames have been downloaded"
             print
             print
             exit = raw_input(' Press Enter to continue ')
-            status = os.chdir(bm)
+            status = os.chdir(DIR_BRENDA_CODE)
         if downtask =='r': 
             clear()
             print
@@ -955,9 +1041,9 @@ def downmenu ():
                     print
                     print """ Press "control-c" to stop regular download and return"""
                     print
-                    status = os.chdir(ps)
-                    status = os.system('python s3cmd get -r --skip-existing '+RENDER_OUTPUT+sb+dir)
-                    status = os.chdir(bm)
+                    status = os.chdir(DIR_PYTHON27_SCRIPTS)
+                    status = os.system('python s3cmd get -r --skip-existing '+RENDER_OUTPUT+' '+dir)
+                    status = os.chdir(DIR_BRENDA_CODE)
                     clear()
                     print
                     print " Checking for new frames every "+tinterval,"minutes"
@@ -988,7 +1074,7 @@ def cancelmenuoptions ():
 def cancelmenu ():
     while True:
         clear()
-        status = os.chdir(bm)
+        status = os.chdir(DIR_BRENDA_CODE)
         cancelmenuoptions()
         canceltask = raw_input(' Which task would you like to perform? ')    
         if canceltask=='m':
@@ -1080,77 +1166,20 @@ def cancelmenu ():
 def inidup ():
     from os.path import expanduser
     home = expanduser("~")
-    s3cmd_there = os.path.isfile(home+ap+ini)
+    s3cmd_there = os.path.isfile(home+DIR_APPDATA_ROAMING+FILE_INI_FILE)
     if s3cmd_there == False:
         clear()
-        shutil.copyfile(home+sl+scf, home+ap+scf)
-        os.rename(home+ap+scf, home+ap+ini)
+        shutil.copyfile(home+'/'+EXTENSION_S3CFG, home+DIR_APPDATA_ROAMING+EXTENSION_S3CFG)
+        os.rename(home+DIR_APPDATA_ROAMING+EXTENSION_S3CFG, home+DIR_APPDATA_ROAMING+FILE_INI_FILE)
 
 #This changes a line in the "tool.py" file as new Ubuntu AMIs only let you ssh in as "ubuntu" and not "tool" whereas old Ubuntu AMIs let you log in as both
-def toolchange ():
+def toolchange():
     x = 'tool.py'
-    with open(bm+sl+brenda+sl+x, 'r') as file:
+    with open(DIR_BRENDA_CODE+'/brenda/'+x, 'r') as file:
         data = file.readlines()
     data[73] = """                user = utils.get_opt(opts.user, conf, 'AWS_USER', default='ubuntu')\n"""
-    with open(bm+sl+brenda+sl+x, 'w') as file:
+    with open(DIR_BRENDA_CODE+'/brenda/'+x, 'w') as file:
         file.writelines( data )
-
-#This checks frame and subframe options in .conf file
-def confadd ():
-    from os.path import expanduser
-    home = expanduser("~")
-    os.chdir(home)
-
-    print
-    print "Looking for config file here: " + home
-    print
-
-    parser = ConfigParser.ConfigParser()
-    parser.readfp(FakeSecHead(open('.brenda.conf')))
-    fos = parser.has_option('asection', 'FRAME_OR_SUBFRAME')
-    if fos == False:
-        #find original values
-        a = parser.get('asection', 'INSTANCE_TYPE')
-        b = parser.get('asection', 'BLENDER_PROJECT')
-        c = parser.get('asection', 'WORK_QUEUE')
-        d = parser.get('asection', 'RENDER_OUTPUT')
-        e = parser.get('asection', 'DONE')
-        m = parser.get('asection', 'AVAILABILITY_ZONE')
-        n = parser.get('asection', 'FRAME_LIST_FILE')
-        o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
-        #new values
-        f = 'frame'
-        g = 'non'
-        h = '0'
-        i = '0.00'
-        j = 'png'
-        k = '0'
-        l = '0'
-
-        #create new options
-        a_nm = 'INSTANCE_TYPE='
-        b_nm = 'BLENDER_PROJECT='
-        c_nm = 'WORK_QUEUE='
-        d_nm = 'RENDER_OUTPUT='
-        e_nm = 'DONE='
-        f_nm = 'FRAME_OR_SUBFRAME='
-        g_nm = 'TILE='
-        h_nm = 'NUMBER_INSTANCES='
-        i_nm = 'PRICE_BID='
-        j_nm = 'FILE_TYPE='
-        k_nm = 'START_FRAME='
-        l_nm = 'END_FRAME='
-        m_nm = 'AVAILABILITY_ZONE='
-        n_nm = 'FRAME_LIST_FILE='
-        o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
-        z = '\n'
-        #write to file
-        newconfig = a_nm+a+z+b_nm+b+z+c_nm+c+z+d_nm+d+z+e_nm+e+z+f_nm+f+z+g_nm+g+z+h_nm+h+z+i_nm+i+z+j_nm+j+z+k_nm+k+z+l_nm+l+z+m_nm+m+z+n_nm+n+z+o_nm+o
-        file = open(".brenda.conf", "w")
-        file.write(newconfig)
-        file.close()
-
-
 
 def instancemenu ():
     while True:
@@ -1184,6 +1213,7 @@ def projectmenu():
         print
         print ' b = Upload .blend file'
         print ' e = Upload .blend file plus external artwork files'
+        print ' w = Upload .blend file with "good workflow" folder structure plus external artwork files'
         print ' z = Upload already zipped archive'
         print
         print
@@ -1199,6 +1229,10 @@ def projectmenu():
 
         if instchoice == 'e':
             nprojexternal()
+            break
+
+        if instchoice == 'w':
+            nprojworkflow()
             break
 
         if instchoice == 'z':
@@ -1292,8 +1326,8 @@ def frames ():
                 if formatchoice=='p':
                     #new values
                     clear()
-                    frametemplateformat(sb+ff+sb+'PNG'+sb)
-                    subframetemplateformat(sb+ff+sb+'PNG'+sb)
+                    frametemplateformat(' -F PNG ')
+                    subframetemplateformat(' -F PNG ')
                     #write to file
                     conf_set_param('FILE_TYPE', 'PNG')
                     clear()
@@ -1304,8 +1338,8 @@ def frames ():
 
                 if formatchoice=='e':
                     clear()
-                    frametemplateformat(sb+ff+sb+'EXR'+sb)
-                    subframetemplateformat(sb+ff+sb+'EXR'+sb)
+                    frametemplateformat(' -F EXR ')
+                    subframetemplateformat(' -F EXR ')
                     #write to file
                     conf_set_param('FILE_TYPE', 'EXR')
                     clear()
@@ -1316,8 +1350,8 @@ def frames ():
 
                 if formatchoice=='j':
                     clear()
-                    frametemplateformat(sb+ff+sb+'JPEG'+sb)
-                    subframetemplateformat(sb+ff+sb+'JPEG'+sb)
+                    frametemplateformat(' -F JPEG ')
+                    subframetemplateformat(' -F JPEG ')
                     #write to file
                     conf_set_param('FILE_TYPE', 'JPEG')
                     print
@@ -1327,8 +1361,8 @@ def frames ():
 
                 if formatchoice=='t':
                     clear()
-                    frametemplateformat(sb+ff+sb+'TIFF'+sb)
-                    subframetemplateformat(sb+ff+sb+'TIFF'+sb)
+                    frametemplateformat(' -F TIFF ')
+                    subframetemplateformat(' -F TIFF ')
                     #write to file
                     conf_set_param('FILE_TYPE', 'TIFF')
                     clear()
@@ -1338,8 +1372,8 @@ def frames ():
                     break
 
                 if formatchoice=='f':
-                    frametemplateformat(sb)
-                    subframetemplateformat(sb)
+                    frametemplateformat(' ')
+                    subframetemplateformat(' ')
                     #write to file
                     conf_set_param('FILE_TYPE', 'specifiedinfile')
                     clear()
@@ -1352,7 +1386,7 @@ def frames ():
 #       This is the equivalent of going into User Preferences, File and checking "Auto Execution: Auto Run Python Scripts".
 #       If this option is not turned on and you are using BlenRig, the armature won't run correctly (FK arms and forearms will stay completely straight).
 def frametemplateformat(newformat):
-    os.chdir(bm)
+    os.chdir(DIR_BRENDA_CODE)
     fpart = 'blender -b *.blend --enable-autoexec'
     lpart = '-o $OUTDIR/###### -s $START -e $END -j $STEP -t 0 -a'
     file = open("frame-template", "w")
@@ -1360,7 +1394,7 @@ def frametemplateformat(newformat):
     file.close()
 
 def subframetemplateformat(newformat):
-    os.chdir(bm)
+    os.chdir(DIR_BRENDA_CODE)
     fpart = """cat >subframe.py <<EOF
 import bpy
 bpy.context.scene.render.border_min_x = $SF_MIN_X
@@ -1398,6 +1432,8 @@ class read_conf_values(object):
         self.m = parser.get('asection', 'AVAILABILITY_ZONE')
         self.n = parser.get('asection', 'FRAME_LIST_FILE')
         self.o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
+        self.p = parser.get('asection', 'REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP')
+
         #create new options
         self.a_nm = 'INSTANCE_TYPE='
         self.b_nm = 'BLENDER_PROJECT='
@@ -1414,7 +1450,8 @@ class read_conf_values(object):
         self.m_nm = 'AVAILABILITY_ZONE='
         self.n_nm = 'FRAME_LIST_FILE='
         self.o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
-        os.chdir(bm)
+        self.p_nm = 'REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP='
+        os.chdir(DIR_BRENDA_CODE)
 
 
 def confwrite(newconfig):
@@ -1424,7 +1461,7 @@ def confwrite(newconfig):
     file = open(".brenda.conf", "w")
     file.write(newconfig)
     file.close()
-    os.chdir(bm)
+    os.chdir(DIR_BRENDA_CODE)
 
 def compare_param_val(originalParamName, originalParamValue, desiredParamName, desiredParamValue):
     retval = originalParamName
@@ -1454,8 +1491,8 @@ def conf_set_param(paramName, paramValue):
     confwrite(newconfig)
 
 def resetworkqueue():
-    os.chdir(bm)
-    status = os.system(py+bw+rs)
+    os.chdir(DIR_BRENDA_CODE)
+    status = os.system('python brenda-work reset')
     if status==0:
         print
         print " Work queue has been reset"
@@ -1465,11 +1502,11 @@ def resetworkqueue():
         print
         print
         print " There was a problem resetting work queue, please try waiting 60 seconds"
-    os.chdir(bm)
+    os.chdir(DIR_BRENDA_CODE)
 
 def stopinstances ():
     print
-    status = os.system(py+br+t+sp)
+    status = os.system('python brenda-run -T stop')
     if status==0:
        print
        print
@@ -1485,7 +1522,7 @@ def stopinstances ():
 
 def cancelpendingspots ():
     print
-    status = os.system(py+br+ca)
+    status = os.system('python brenda-run cancel')
     if status==0:
         print
         print
@@ -1507,45 +1544,14 @@ def emptybuckets ():
     parser = ConfigParser.ConfigParser()
     parser.readfp(FakeSecHead(open('.brenda.conf')))
     #find original values
-    a = parser.get('asection', 'INSTANCE_TYPE')
     b = parser.get('asection', 'BLENDER_PROJECT')
-    c = parser.get('asection', 'WORK_QUEUE')
     d = parser.get('asection', 'RENDER_OUTPUT')
-    e = parser.get('asection', 'DONE')
-    f = parser.get('asection', 'FRAME_OR_SUBFRAME')
-    g = parser.get('asection', 'TILE')
-    h = parser.get('asection', 'NUMBER_INSTANCES')
-    i = parser.get('asection', 'PRICE_BID')
-    j = parser.get('asection', 'FILE_TYPE')
-    k = parser.get('asection', 'START_FRAME')
-    l = parser.get('asection', 'END_FRAME')
-    m = parser.get('asection', 'AVAILABILITY_ZONE')
-    n = parser.get('asection', 'FRAME_LIST_FILE')
-    o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
-
-    #create new options
-    a_nm = 'INSTANCE_TYPE='
-    b_nm = 'BLENDER_PROJECT='
-    c_nm = 'WORK_QUEUE='
-    d_nm = 'RENDER_OUTPUT='
-    e_nm = 'DONE='
-    f_nm = 'FRAME_OR_SUBFRAME='
-    g_nm = 'TILE='
-    h_nm = 'NUMBER_INSTANCES='
-    i_nm = 'PRICE_BID='
-    j_nm = 'FILE_TYPE='
-    k_nm = 'START_FRAME='
-    l_nm = 'END_FRAME='
-    m_nm = 'AVAILABILITY_ZONE='
-    n_nm = 'FRAME_LIST_FILE='
-    o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
-    z = '\n'
 
     projbucketname = urlparse.urlsplit(b).netloc
     projbucketpath = 's3://'+projbucketname
 
     #changes to s3cmd working directory
-    os.chdir(ps)
+    os.chdir(DIR_PYTHON27_SCRIPTS)
 
     #deletes all old project files
     print
@@ -1562,7 +1568,7 @@ def emptybuckets ():
 
 
 def subframecreate():
-    status = os.chdir(bm)
+    status = os.chdir(DIR_BRENDA_CODE)
     subframe_template_there = os.path.isfile('subframe-template')
     if subframe_template_there == False:
         file = open("subframe-template", "w")
@@ -1578,7 +1584,7 @@ blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######_X-$SF_MIN_X-$SF
         file.close()
 
 def printspotrequest(spinstype):
-    spotrequest = py+br+i+spinstype+sb+spotprice
+    spotrequest = 'python brenda-run -i '+spinstype+' price'
     status = os.system(spotrequest)
     print
 
@@ -1599,5 +1605,4 @@ def timer(start):
 subframecreate()
 toolchange()
 inidup()
-confadd()
 mainmenu()
