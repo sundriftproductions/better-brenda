@@ -18,22 +18,22 @@ w = Upload .blend file with "good workflow" directory structure plus external ar
 z = Upload already zipped archive
 ```
 
-"Upload .blend file" operates with win_brenda_console's original behavior, which is to take a single .blend file, zip it, and upload it to the S3 bucket. 
+`Upload .blend file` operates with win_brenda_console's original behavior, which is to take a single .blend file, zip it, and upload it to the S3 bucket. 
 
-"Upload .blend file plus external artwork files" will zip up a .blend file plus everything in the relative directory "/artwork/in project" from the .blend file and upload it to the S3 bucket. This an approach that I use in my Blender projects when I want to do something quick and dirty, as it allows me to have the paths "/artwork/not in project" (for files that are part of the Blender project but should not be uploaded to AWS, like audio files and video overlay files).
+`Upload .blend file plus external artwork files` will zip up a .blend file plus everything in the relative directory `/artwork/in project` from the .blend file and upload it to the S3 bucket. This an approach that I use in my Blender projects when I want to do something quick and dirty, as it allows me to have the paths `/artwork/not in project`(for files that are part of the Blender project but should not be uploaded to AWS, like audio files and video overlay files).
 
-"Upload .blend file with "good workflow" directory structure plus external artwork files" is more complicated. This uploads a project that follows a directory structure that might be seen at a professional production house (such as Pixar or WETA). See the "Good Workflow Structure" section of this document on how to set up a project that uses "good workflow".
+`Upload .blend file with "good workflow" directory structure plus external artwork files` is more complicated. This uploads a project that follows a directory structure that might be seen at a professional production house (such as Pixar or WETA). See the "Good Workflow Structure" section of this document on how to set up a project that uses "good workflow".
 
-"Upload already zipped archive" is intended to be used in two different cases:
+`Upload already zipped archive` is intended to be used in two different cases:
 
-1. You have a .blend file that relies upon locations that are outside of "/artwork/in project". For example, if you create a water simulation, Blender will place all of the water simulation files in a directory named "cache_fluid_XXXX" at the same directory level as your project file. In this scenario, you will want to manually zip up all of the files that you need and then upload it to your S3 bucket.
+1. You have a .blend file that relies upon locations that are outside of `/artwork/in project`. For example, if you create a water simulation, Blender will place all of the water simulation files in a directory named `cache_fluid_XXXX` at the same directory level as your project file. In this scenario, you will want to manually zip up all of the files that you need and then upload it to your S3 bucket.
 2. You already have a large zipped archive in your S3 project directory and do not wish to re-zip and re-upload it.
 
-If you pick the "Upload already zipped archive" option, you still must select the zipped archive to upload. win_brenda_console simply uses that file name to determine what file name value to send to Brenda. win_brenda_console does not re-zip, resend, or delete the zip file with this option. It is expected that the .blend file is in the root directory of the zipped archive.
+If you pick the `Upload already zipped archive` option, you still must select the zipped archive to upload. win_brenda_console simply uses that file name to determine what file name value to send to Brenda. win_brenda_console does not re-zip, resend, or delete the zip file with this option. It is expected that the .blend file is in the root directory of the zipped archive.
 
 * **Longer time to read messages:** win_brenda_console had a 2 second delay to read messages, and sometimes these messages were long error messages which could not be read quickly. Now there are frequent "Press Enter to continue" messages so you have a chance to fully read (or copy) the messages on the screen. For very short confirmation messages, there is now a 3 second delay.
 
-* **"--enable-autoexec" added to the frame and subframe template:** The Blender command line flag "--enable-autoexec" has been added to the frame and subframe template. This is the equivalent of going into Blender User Preferences->File and checking "Auto Execution: Auto Run Python Scripts". If this option is not turned on and you are using BlenRig, the armature won't run correctly (FK arms and forearms will stay completely straight).
+* **"--enable-autoexec" added to the frame and subframe template:** The Blender command line flag "--enable-autoexec" has been added to the frame and subframe template. This is the equivalent of going into Blender User Preferences -> File and checking "Auto Execution: Auto Run Python Scripts". If this option is not turned on and you are using BlenRig, the armature won't run correctly (FK arms and forearms will stay completely straight).
 
 * **Removed the ability to pick a preconfigured AMI:** While it was convenient to pick a preconfigured AMI, the feature relied upon a download -- now removed -- from a web site to get this information. As a result, the original win_brenda_console project will crash upon starting as well as when trying to select an AMI. Since this is a somewhat advanced tool for rendering, it is assumed that you have build your own AMI for rendering.
 
@@ -41,18 +41,18 @@ If you pick the "Upload already zipped archive" option, you still must select th
 
 * **Instance types have been updated:** c1.xlarge is removed because I never found it useful and it always cost way more than the c3 instances. c3.4xlarge was added because I needed more computing power.
 
-* **Additional options for stopping the render farm and clearing out frames:** Under "Canceling and resetting your farm", instead of having to always enter the combination r, Enter, s, Enter, c, Enter, e, Enter to reset the work queue, stop all running instances, cancel pending spot requests, and empty frame/project buckets, there is a new option to do all of these at once. There is also an option which omits the final step of emptying the frame/project buckets.
+* **Additional options for stopping the render farm and clearing out frames:** Under `Canceling and resetting your farm`, instead of having to always enter the combination r, Enter, s, Enter, c, Enter, e, Enter to reset the work queue, stop all running instances, cancel pending spot requests, and empty frame/project buckets, there is a new option to do all of these at once. There is also an option which omits the final step of emptying the frame/project buckets.
 
-* **Additional options for selecting a frame range:** Under Setting up your farm -> Frames, the menu has two new options:
+* **Additional options for selecting a frame range:** `Under Setting up your farm -> Frames`, the menu has two new options:
 
 ```
 r = Use (and set) frame range
 u = Use (and select) a frame list file (a text file containing a list of specific frames to render)
 ```
 
-"Use (and set) frame range" works as setting a frame range worked in the original application, where you pick a start and end frame and Brenda will render everything between those two frame numbers (inclusive).
+`Use (and set) frame range` works as setting a frame range worked in the original application, where you pick a start and end frame and Brenda will render everything between those two frame numbers (inclusive).
 
-"Use (and select) a frame list file (a text file containing a list of specific frames to render)" means exactly what it says. If you only want to render a set of non-contiguous frames, you can create a text file that contains a list of them and then upload that file to the application. This is helpful if you have a handful of non-contiguous frames that need to get rendered or if you're trying to simulate something like timelapse photography or have unusual requirements for which frames need to be rendered.
+`Use (and select) a frame list file (a text file containing a list of specific frames to render)` means exactly what it says. If you only want to render a set of non-contiguous frames, you can create a text file that contains a list of them and then upload that file to the application. This is helpful if you have a handful of non-contiguous frames that need to get rendered or if you're trying to simulate something like timelapse photography or have unusual requirements for which frames need to be rendered.
 
 The framelist text file should contain one line of text with each frame number separated by a comma and no spaces. Here is an example:
 
