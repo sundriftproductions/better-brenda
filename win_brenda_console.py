@@ -163,12 +163,11 @@ def nprojworkflow():
     print
     print 'Select your Blender project file.\n'
     print 'Your project must meet the following criteria:\n'
-    print ' * Have a filename with a 3-character scene followed by an underscore followed by a 3-character shot number.'
-    print '   (e.g. "SEQ_010.blend", "SEQ_020_v002.blend", "PAR_001_anything_goes_here.blend")\n'
     print ' * Use relative file paths.\n'
-    print ' * Have a project folder structure as outlined in the "good workflow" document.\n'
-    print ' * The project file must be located inside this directory:'
-    print '   [project directory]/3D/scenes/[3 character scene]/[3 character shot number]/'
+    print ' * Have a project directory structure as outlined in the "Good Workflow Structure" section of readme.md.\n'
+    print ' * The project file must be located inside one of these directories:'
+    print '     [project directory]\\2D\\Blender\\[3 character scene]\\[3 character shot number]\\'
+    print '     [project directory]\\3D\\scenes\\[3 character scene]\\[3 character shot number]\\'
     time.sleep(1)
     root = Tk()
     root.withdraw()
@@ -224,7 +223,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
     # uploadtype = 0: Uploading just a project file
     #            = 1: Uploading a project file and we will include everything in the "/artwork/in project" directory
     #            = 2: Uploading an already zipped archive
-    #            = 3: Uploading a project file with "good workflow" folder structure plus external artwork files
+    #            = 3: Uploading a project file with "good workflow" directory structure plus external artwork files
     while True:
         clear()
         print
@@ -241,8 +240,8 @@ def uploadproject(projfilename, projfilepath, uploadtype):
         elif (uploadtype == 2):
             print ' 2. Upload the already-zipped archive ' + projfilename
         elif (uploadtype == 3):
-            print ' 2. Upload the project file ' + projfilename + ' as well as any external files determined by the "good workflow"'
-            print '    folder structure.'
+            print ' 2. Upload the project file ' + projfilename + ' as well as any external files as determined by the'
+            print '    "good workflow" directory structure.'
         else:
             print ' 2. Upload ' + projfilename
         print
@@ -357,6 +356,9 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 # So we need to take the root and go up four directories.
                 abs_project_path = os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..', os.pardir))
                 directories_to_zip = []
+                directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\plates\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\plates\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\plates\\' + sequence_name + '\\' + shot_number)
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\env\\ALL\\')
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\env\\' + sequence_name, True)
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\env\\' + sequence_name + '\\' + shot_number)
@@ -1194,7 +1196,7 @@ def projectmenu():
         print
         print ' b = Upload .blend file'
         print ' e = Upload .blend file plus external artwork files'
-        print ' w = Upload .blend file with "good workflow" folder structure plus external artwork files'
+        print ' w = Upload .blend file with "good workflow" directory structure plus external artwork files'
         print ' z = Upload already zipped archive'
         print
         print
