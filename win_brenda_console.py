@@ -197,14 +197,9 @@ def get_subdirectories(absolute_project_directory, relative_subdirectory, is_seq
     # relative_subdirectory should not start with a backslash.
     # If is_sequence_directory = True then we will not pull in ANY 3-numbered directories, but we'll pull in all of
     # the other directories.
-    print 'get_subdirectories() called!!!!!!!!!!!!!!!!!!!!!!!!!'
-    print '     absolute_project_directory: ' + absolute_project_directory
-    print '          relative_subdirectory: ' + relative_subdirectory
     retval = []
     retval.append(relative_subdirectory) # We need to append the actual directory because otherwise it's never added to the list.
-
     source_dir = os.path.abspath(os.path.join(absolute_project_directory, relative_subdirectory))
-    print '                     source_dir: ' + source_dir
     for root, dirs, files in os.walk(source_dir):
         # add directory (needed for empty dirs)
         for dir in dirs:
@@ -214,18 +209,14 @@ def get_subdirectories(absolute_project_directory, relative_subdirectory, is_seq
             # It is also legal to have a path like c:\P-Project\3D\assets\not in project but it really is\stuff
             full_path = os.path.join(root, dir)
             relative_path = full_path[len(source_dir):]
-            print '                           full_path: ' + full_path
-            print '                       relative_path: ' + relative_path
             if (dir.strip().upper() != NOT_IN_PROJECT and '\\' + NOT_IN_PROJECT + '\\' not in relative_path.upper()):
                 # OK, at least we know that NOT_IN_PROJECT isn't here. Let's also check for 3-numbered directories, if needed.
                 # Note that there is a special case that we need to prepare for -- if we're in a sequence directory and there's
                 # a number directory under that (which we don't want to pick up), but under that number directory there's a
                 # non-number directory -- for dir in dirs will pick up ALL of those directories, so we need to prevent that.
                 beginning_of_relative_path = relative_path.split('\\')[1]
-                print '          beginning_of_relative_path: ' + beginning_of_relative_path
                 if (is_sequence_directory == False) or \
                         not (is_sequence_directory == True and len(beginning_of_relative_path) == 3 and beginning_of_relative_path.isdigit() == True):
-                    print '            appending this: ' + os.path.join(relative_subdirectory, relative_path[1:])
                     retval.append(os.path.join(relative_subdirectory, relative_path[1:])) # We need to strip the leading backslash from relative_path, otherwise os.path.join won't work
     return retval
 
@@ -350,21 +341,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 #   * When we look in a sequence directory, we ignore any directories that have a three number value
                 #     (we don't want to pull in any other shots) but we DO pull in all of the other directories (except
                 #     for any directory that says "not in project"). We pull in all files in a sequence directory.
-                #   * We look in the following directories and recursively pull in EVERYTHING in them, but we do not
-                #     pull in any directory called "not in project".
-                #       - P-Project\3D\assets\env\ALL\
-                #       - P-Project\3D\assets\env\SEQ\
-                #       - P-Project\3D\assets\env\SEQ\010\
-                #       - P-Project\3D\assets\models\ALL\
-                #       - P-Project\3D\assets\models\SEQ\
-                #       - P-Project\3D\assets\models\SEQ\010\
-                #       - P-Project\3D\assets\rigs\ALL\
-                #       - P-Project\3D\assets\rigs\SEQ\
-                #       - P-Project\3D\assets\rigs\SEQ\010\
-                #       - P-Project\3D\assets\worlds\ALL\
-                #       - P-Project\3D\assets\worlds\SEQ\
-                #       - P-Project\3D\assets\worlds\SEQ\010\
-
+                #
                 # Let's determine the sequence and shot number, based on the directory structure.
                 path_list = projfilepath.split(os.sep)
                 if (len(path_list) < 2):
@@ -372,8 +349,6 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                     break
                 sequence_name = path_list[-2]
                 shot_number = path_list[-1]
-                print 'Sequence name: ' + sequence_name
-                print '       Shot #: ' + shot_number
 
                 # Let's figure out the root of the project. The typical projfilepath path would be like this...
                 #   D:\video\P-Project\3D\scenes\SEQ\010\
@@ -404,14 +379,6 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\imageseqs\\' + sequence_name, True)
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\imageseqs\\' + sequence_name + '\\' + shot_number)
 
-                print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
-                print 'DIRECTORIES TO ZIP: '
-                print
-                for d in directories_to_zip:
-                    print '    ' +d
-                print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
-
-
                 print 'Zipping up project "' + zippedprojfilename + '"...'
 
                 with zipfile.ZipFile(zippedprojfilename, "w", zipfile.ZIP_DEFLATED) as output:
@@ -419,40 +386,35 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                         # Figure out where the files are on the local hard drive for this dir so we know were to grab things
                         source_dir = os.path.abspath(os.path.join(abs_project_path, relative_dir))
                         relroot = os.path.abspath(os.path.join(source_dir, os.pardir))
-                        print 'source_dir: ' + source_dir # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        print '   relroot: ' + relroot # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        print '  Zipping files from "' + source_dir + '"...'
                         for root, dirs, files in os.walk(source_dir):
                             for file in files:
                                 filename = os.path.join(root, file)
-                                print 'filename: ' + filename # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 if os.path.isfile(filename):  # regular files only
                                     print '    Adding "' + filename + '"...'
-                                    #arcname = os.path.join(relative_dir + '\\' + os.path.relpath(root, relroot), file)
-                                    arcname = os.path.join(relative_dir, os.path.relpath(root, relroot))
-                                    print '    **** relative_dir: ' + relative_dir
-                                    print '    ****         root: ' + root
-                                    print '    ****      relroot: ' + relroot
-                                    print '    ****         file: ' + file
-                                    print '    ****      arcname: ' + arcname
-                                    print '    **** writing this: ' + relative_dir + '\\' + file
-                                    output.write(filename, relative_dir + '\\' + file)
+                                    # Note that in the next statement we're putting "project" as the top level directory
+                                    # in the archive; Brenda automatically picks this as the directory. The reason for
+                                    # this is because we want to tell the frame template to use our full relative path
+                                    # (that usually starts with "3D\\" but it might not always be that way in the
+                                    # future), and Brenda will already take the root level directory and treat it as
+                                    # part of the path to the unzipped archive. For example, if you DON'T put something
+                                    # here as the top level directory in the archive and then you have a frame template
+                                    # that looks for this...
+                                    #      3D/scenes/SEQ/010/*.blend
+                                    # ...you will get this error:
+                                    #      Error: Cannot read file '/mnt/brenda/brenda-project.tmp/3D/3D/scenes/SEQ/010/*.blend': No such file or directory
+                                    # Naturally, you don't want to have to strip out the "3D/" part of the path, and it
+                                    # could get ugly if the app needs to one day pull things from, say, the "2D/"
+                                    # directory. So rather than changing Brenda, we're changing what we send to Brenda.
+                                    output.write(filename, 'project\\' + relative_dir + '\\' + file)
                             break  # Prevent descending into subfolders. This works because os.walk first lists the files in the requested folder and then goes into subfolders.
                     # Lastly, write the actual .blend project file in its proper directory.
                     relative_project_path = projfilepath[len(abs_project_path):] # This is also the path that frame-template and subframe-template need to start from when finding the blend file.
-                    print '--------          projfilepath: ' + projfilepath
-                    print '--------          projfilename: ' + projfilename
-                    print '--------      abs_project_path: ' + abs_project_path
-                    print '-------- len(abs_project_path): ' + str(len(abs_project_path))
-                    print '-------- relative_project_path: ' + relative_project_path
-                    output.write(projfilename, relative_project_path + '\\' + projfilename)
+                    output.write(projfilename, 'project\\' + relative_project_path + '\\' + projfilename) # Note the use of 'project\\' -- see explanation above.
                     conf_set_param('BLENDER_DIR_IN_ZIP_FILE', relative_project_path)
                 print zippedprojfilename + " has been created"
                 print
 
             print
-            exit = raw_input(' LOOK AT YOUR ZIP FILE Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
             print "Changing to s3cmd working directory: " + DIR_PYTHON27_SCRIPTS
             os.chdir(DIR_PYTHON27_SCRIPTS)
             print
@@ -647,7 +609,6 @@ def reviewjob():
                 print 'Updating frame template files...'
                 updateframetemplateformat()
                 print 'Done updating frame template files.'
-                exit = raw_input(' CHECK YOUR FRAME TEMPLATE FILE!!!!!!!!!! Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!
 
                 os.chdir(DIR_BRENDA_CODE)
                 if conf.f == 'frame':
@@ -1414,10 +1375,14 @@ def getblenderdirinzipfile():
     retval = parser.get('asection', 'BLENDER_DIR_IN_ZIP_FILE')
     if len(retval) > 0:
         retval = retval.replace('\\', '/') # When going through the directory structure in Linux, we need to use forward slashes
-        retval = retval[1:] # Remove the initial forward slash...
-        retval += '/' # ...and append a trailing slash.
-        
-        retval = 'scenes/SEQ/010/' # TODO: REMOVE THIS!!!!!!!!!!!!! THIS IS JUST A TEST.
+        retval = retval[1:] # Remove the initial forward slash
+        retval += '/*.blend' # ...and append a trailing slash, the blend file.
+        # Weirdly, you cannot send over the path to the file with quotes around it; Brenda doesn't recognize it.
+        # Fortunately, though, if you're doing the "good workflow" template, you won't have any spaces in your path
+        # to the .blend file. It makes no difference if the .blend file has spaces in it since we're just grabbing it by
+        # wildcard. (Also, it doesn't matter if the "good workflow" main directory name has spaces in it.)
+    else:
+        retval = '*.blend'
     return retval
 
 def updateframetemplateformat():
@@ -1436,7 +1401,7 @@ def updateframetemplateformat():
 
     # Update the regular frame template.
     os.chdir(DIR_BRENDA_CODE)
-    code = 'blender -b ' + blender_dir_in_zip_file + '*.blend --enable-autoexec ' + file_type_format + ' -o $OUTDIR/###### -s $START -e $END -j $STEP -t 0 -a'
+    code = 'blender -b ' + blender_dir_in_zip_file + ' --enable-autoexec ' + file_type_format + ' -o $OUTDIR/###### -s $START -e $END -j $STEP -t 0 -a'
     file = open("frame-template", "w")
     file.write(code)
     file.close()
@@ -1450,7 +1415,7 @@ bpy.context.scene.render.border_min_y = $SF_MIN_Y
 bpy.context.scene.render.border_max_y = $SF_MAX_Y
 bpy.context.scene.render.use_border = True
 EOF
-blender -b """ + blender_dir_in_zip_file + """*.blend --enable-autoexec -P subframe.py """ + file_type_format + """ -o $OUTDIR/frame_######_X-$SF_MIN_X-$SF_MAX_X-Y-$SF_MIN_Y-$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a"""
+blender -b """ + blender_dir_in_zip_file + """ --enable-autoexec -P subframe.py """ + file_type_format + """ -o $OUTDIR/frame_######_X-$SF_MIN_X-$SF_MAX_X-Y-$SF_MIN_Y-$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a"""
     file = open("subframe-template", "w")
     file.write(code)
     file.close()
