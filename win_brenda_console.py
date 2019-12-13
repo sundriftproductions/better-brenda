@@ -114,7 +114,7 @@ def amis ():
             print ' Your new AMI will be changed to "'+ami_user+'"'
             print
             print
-            amiconf = raw_input(' Do you want to continue, type y or n? ') 
+            amiconf = raw_input(' Do you want to continue? (y/n) ')
             if amiconf=='y':
                 clear()
                 os.chdir(DIR_BRENDA_CODE+'/brenda')
@@ -197,8 +197,14 @@ def get_subdirectories(absolute_project_directory, relative_subdirectory, is_seq
     # relative_subdirectory should not start with a backslash.
     # If is_sequence_directory = True then we will not pull in ANY 3-numbered directories, but we'll pull in all of
     # the other directories.
+    print 'get_subdirectories() called!!!!!!!!!!!!!!!!!!!!!!!!!'
+    print '     absolute_project_directory: ' + absolute_project_directory
+    print '          relative_subdirectory: ' + relative_subdirectory
     retval = []
+    retval.append(relative_subdirectory) # We need to append the actual directory because otherwise it's never added to the list.
+
     source_dir = os.path.abspath(os.path.join(absolute_project_directory, relative_subdirectory))
+    print '                     source_dir: ' + source_dir
     for root, dirs, files in os.walk(source_dir):
         # add directory (needed for empty dirs)
         for dir in dirs:
@@ -208,14 +214,18 @@ def get_subdirectories(absolute_project_directory, relative_subdirectory, is_seq
             # It is also legal to have a path like c:\P-Project\3D\assets\not in project but it really is\stuff
             full_path = os.path.join(root, dir)
             relative_path = full_path[len(source_dir):]
+            print '                           full_path: ' + full_path
+            print '                       relative_path: ' + relative_path
             if (dir.strip().upper() != NOT_IN_PROJECT and '\\' + NOT_IN_PROJECT + '\\' not in relative_path.upper()):
                 # OK, at least we know that NOT_IN_PROJECT isn't here. Let's also check for 3-numbered directories, if needed.
                 # Note that there is a special case that we need to prepare for -- if we're in a sequence directory and there's
                 # a number directory under that (which we don't want to pick up), but under that number directory there's a
                 # non-number directory -- for dir in dirs will pick up ALL of those directories, so we need to prevent that.
                 beginning_of_relative_path = relative_path.split('\\')[1]
+                print '          beginning_of_relative_path: ' + beginning_of_relative_path
                 if (is_sequence_directory == False) or \
                         not (is_sequence_directory == True and len(beginning_of_relative_path) == 3 and beginning_of_relative_path.isdigit() == True):
+                    print '            appending this: ' + os.path.join(relative_subdirectory, relative_path[1:])
                     retval.append(os.path.join(relative_subdirectory, relative_path[1:])) # We need to strip the leading backslash from relative_path, otherwise os.path.join won't work
     return retval
 
@@ -306,6 +316,7 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 output = zipfile.ZipFile(zippedprojfilename, 'w')
                 output.write(projfilename)
                 output.close()
+                conf_set_param('BLENDER_DIR_IN_ZIP_FILE', '')
                 print zippedprojfilename + " has been created"
                 print
             elif (uploadtype == 1):
@@ -322,9 +333,12 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                             if os.path.isfile(filename): # regular files only
                                 arcname = os.path.join("artwork\\" + os.path.relpath(root, relroot), file)
                                 output.write(filename, arcname)
+                conf_set_param('BLENDER_DIR_IN_ZIP_FILE', '')
                 print zippedprojfilename + " has been created"
                 print
-            # Note we don't check if uploadtype == 2, because the file is already zipped.
+            elif (uploadtype == 2):
+                # The file is already zipped.
+                conf_set_param('BLENDER_DIR_IN_ZIP_FILE', '')
             elif (uploadtype == 3): # GOOD_WORKFLOW_ZIP.
                 # Here's how GOOD_WORKFLOW_ZIP works:
                 #   * "ALL" is a reserved sequence name. We pull in everything from an "ALL" sequence directory.
@@ -361,21 +375,6 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 print 'Sequence name: ' + sequence_name
                 print '       Shot #: ' + shot_number
 
-                # Find all of the paths.
-                all_paths = []
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\env\\ALL', os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\env\\' + sequence_name, os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\env\\' + sequence_name + '\\' + shot_number, os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\models\\ALL', os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\models\\' + sequence_name, os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\models\\' + sequence_name + '\\' + shot_number, os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\rigs\\ALL', os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\rigs\\' + sequence_name, os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\rigs\\' + sequence_name + '\\' + shot_number, os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\worlds\\ALL', os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\worlds\\' + sequence_name, os.pardir)))
-                #all_paths.append(os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..\\assets\\worlds\\' + sequence_name + '\\' + shot_number, os.pardir)))
-
                 # Let's figure out the root of the project. The typical projfilepath path would be like this...
                 #   D:\video\P-Project\3D\scenes\SEQ\010\
                 # ...and we'd want to grab this as the root:
@@ -395,43 +394,64 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\worlds\\ALL\\')
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\worlds\\' + sequence_name, True)
                 directories_to_zip += get_subdirectories(abs_project_path, '3D\\assets\\worlds\\' + sequence_name + '\\' + shot_number)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\data\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\data\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\data\\' + sequence_name + '\\' + shot_number)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\images\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\images\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\images\\' + sequence_name + '\\' + shot_number)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\imageseqs\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\imageseqs\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '3D\\imageseqs\\' + sequence_name + '\\' + shot_number)
 
-                print directories_to_zip
+                print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
+                print 'DIRECTORIES TO ZIP: '
+                print
+                for d in directories_to_zip:
+                    print '    ' +d
+                print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
 
-                exit = raw_input(' Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-                # TODO: PICK UP HERE!!!!!!!!!!!!!!!!!!!!
+                print 'Zipping up project "' + zippedprojfilename + '"...'
 
                 with zipfile.ZipFile(zippedprojfilename, "w", zipfile.ZIP_DEFLATED) as output:
-                    output.write(projfilename)
-                    for root, dirs, files in os.walk(source_dir):
-                        # add empty dirs
-                        output.write(root, "3D\\assets\\env\\ALL")
-
-                        #       - 3D\assets\env\ALL\
-                        #       - P-Project\3D\assets\env\SEQ\
-                        #       - P-Project\3D\assets\env\SEQ\010\
-                        #       - P-Project\3D\assets\models\ALL\
-                        #       - P-Project\3D\assets\models\SEQ\
-                        #       - P-Project\3D\assets\models\SEQ\010\
-                        #       - P-Project\3D\assets\rigs\ALL\
-                        #       - P-Project\3D\assets\rigs\SEQ\
-                        #       - P-Project\3D\assets\rigs\SEQ\010\
-                        #       - P-Project\3D\assets\worlds\ALL\
-                        #       - P-Project\3D\assets\worlds\SEQ\
-                        #       - P-Project\3D\assets\worlds\SEQ\010\
-
-                        # add directory (needed for empty dirs)
-                        output.write(root, "artwork\\" + os.path.relpath(root, relroot))
-                        for file in files:
-                            filename = os.path.join(root, file)
-                            if os.path.isfile(filename):  # regular files only
-                                arcname = os.path.join("artwork\\" + os.path.relpath(root, relroot), file)
-                                output.write(filename, arcname)
+                    for relative_dir in directories_to_zip:
+                        # Figure out where the files are on the local hard drive for this dir so we know were to grab things
+                        source_dir = os.path.abspath(os.path.join(abs_project_path, relative_dir))
+                        relroot = os.path.abspath(os.path.join(source_dir, os.pardir))
+                        print 'source_dir: ' + source_dir # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        print '   relroot: ' + relroot # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        print '  Zipping files from "' + source_dir + '"...'
+                        for root, dirs, files in os.walk(source_dir):
+                            for file in files:
+                                filename = os.path.join(root, file)
+                                print 'filename: ' + filename # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                if os.path.isfile(filename):  # regular files only
+                                    print '    Adding "' + filename + '"...'
+                                    #arcname = os.path.join(relative_dir + '\\' + os.path.relpath(root, relroot), file)
+                                    arcname = os.path.join(relative_dir, os.path.relpath(root, relroot))
+                                    print '    **** relative_dir: ' + relative_dir
+                                    print '    ****         root: ' + root
+                                    print '    ****      relroot: ' + relroot
+                                    print '    ****         file: ' + file
+                                    print '    ****      arcname: ' + arcname
+                                    print '    **** writing this: ' + relative_dir + '\\' + file
+                                    output.write(filename, relative_dir + '\\' + file)
+                            break  # Prevent descending into subfolders. This works because os.walk first lists the files in the requested folder and then goes into subfolders.
+                    # Lastly, write the actual .blend project file in its proper directory.
+                    relative_project_path = projfilepath[len(abs_project_path):] # This is also the path that frame-template and subframe-template need to start from when finding the blend file.
+                    print '--------          projfilepath: ' + projfilepath
+                    print '--------          projfilename: ' + projfilename
+                    print '--------      abs_project_path: ' + abs_project_path
+                    print '-------- len(abs_project_path): ' + str(len(abs_project_path))
+                    print '-------- relative_project_path: ' + relative_project_path
+                    output.write(projfilename, relative_project_path + '\\' + projfilename)
+                    conf_set_param('BLENDER_DIR_IN_ZIP_FILE', relative_project_path)
                 print zippedprojfilename + " has been created"
                 print
-                exit = raw_input(' Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            print
+            exit = raw_input(' LOOK AT YOUR ZIP FILE Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             print "Changing to s3cmd working directory: " + DIR_PYTHON27_SCRIPTS
             os.chdir(DIR_PYTHON27_SCRIPTS)
@@ -449,10 +469,6 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 os.remove(zippedprojfilename)
 
             conf_set_param('BLENDER_PROJECT', projbucketpath+'/'+zippedprojfilename)
-            if (uploadtype == 2):
-                conf_set_param('REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP', 'GOOD_WORKFLOW_ZIP')
-            else:
-                conf_set_param('REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP', 'REGULAR_ZIP')
 
             resetworkqueue()
             exit = raw_input(' Press Enter to continue ')
@@ -480,7 +496,7 @@ def workq():
         else:
             print " A total of "+str(totalFrames)+" frames will be rendered."
         print
-        qconf = raw_input(' Are these values correct, y or n? ')  
+        qconf = raw_input(' Are these values correct? (y/n) ')
         if qconf=='y':
             clear()
             conf_set_param('START_FRAME', sframe)
@@ -605,7 +621,7 @@ def reviewjob():
         print " %-25s %-15s" % ('Total number of files (if 2D or if combining 3D L&R images to one file)',totalNumberOfFiles)
         print " %-25s %-15s" % ('Total number of files (if 3D and separate L&R images)',totalNumberOfFiles * 2)
         print "\n\n"
-        rconf = raw_input(' Would you like to start the job, y or n? ')  
+        rconf = raw_input(' Would you like to start the job? (y/n) ')
         if rconf == 'n':
             clear()
             print
@@ -615,10 +631,9 @@ def reviewjob():
         if rconf =='y':
             clear()
             print
-            print ' This will build work queue and initiate instances'
-            print 
+            print ' This will build the work queue and initiate instances.'
             print
-            doublerconf = raw_input(' Are you sure, y or n? ')
+            doublerconf = raw_input(' Are you sure? (y/n) ')
 
             if doublerconf =='n':
                 clear()
@@ -629,6 +644,11 @@ def reviewjob():
 
             if doublerconf == 'y':
                 clear()
+                print 'Updating frame template files...'
+                updateframetemplateformat()
+                print 'Done updating frame template files.'
+                exit = raw_input(' CHECK YOUR FRAME TEMPLATE FILE!!!!!!!!!! Press Enter to continue ') # TODO: REMOVE!!!!!!!!!!!!!!!!!!!!!!!
+
                 os.chdir(DIR_BRENDA_CODE)
                 if conf.f == 'frame':
                     if conf.o == 'FRAME_RANGE': # We have a normal range of frames, so we need to put a "push" at the end of this call
@@ -660,13 +680,13 @@ def reviewjob():
                     print
                     if status == 1:
                         print '\n'
-                        print ' There was an error initiating Instances. Try a C3 instance type for this AMI'
+                        print ' There was an error initiating instances. Try a C3 instance type for this AMI'
                         resetworkqueue()
                         exit = raw_input(' Press Enter to continue ')
                         break
                     if status == 0:
                         print '\n'
-                        print ' Instance/s have been initiated'
+                        print ' Instance/s have been initiated.'
                         print
                         print
                         timer(1)
@@ -770,7 +790,7 @@ def instance():
         print ' This will cost you $'+ str(math), 'per hour'
         print
         print
-        iconf = raw_input(' Are these values correct, y or n? ')  
+        iconf = raw_input(' Are these values correct? (y/n) ')
         if iconf=='y':
             clear()
 
@@ -1092,14 +1112,14 @@ def cancelmenu ():
         if canceltask=='z':  
             clear()
             print
-            econf = raw_input(' Would you like to (among other things) empty frame and project buckets, y or n? ')  
+            econf = raw_input(' Would you like to (among other things) empty frame and project buckets? (y/n) ')
             if econf =='y':
                 clear()
                 print
                 print ' This operation will (among other things) delete all files in your frame and project buckets!'
                 print 
                 print
-                doubleeconf = raw_input(' Are you sure, y or n? ')                
+                doubleeconf = raw_input(' Are you sure? (y/n) ')
                 if doubleeconf == 'y':
                     clear()
                     resetworkqueue()
@@ -1136,14 +1156,14 @@ def cancelmenu ():
         if canceltask=='e':
             clear()
             print
-            econf = raw_input(' Would you like to empty frame and project buckets, y or n? ')  
+            econf = raw_input(' Would you like to empty frame and project buckets? (y/n) ')
             if econf =='y':
                 clear()
                 print
                 print ' This will delete all files in your frame and project buckets!'
                 print 
                 print
-                doubleeconf = raw_input(' Are you sure, y or n? ')
+                doubleeconf = raw_input(' Are you sure? (y/n) ')
                 if doubleeconf == 'y':
                     clear()
                     emptybuckets()
@@ -1326,9 +1346,6 @@ def frames ():
                 if formatchoice=='p':
                     #new values
                     clear()
-                    frametemplateformat(' -F PNG ')
-                    subframetemplateformat(' -F PNG ')
-                    #write to file
                     conf_set_param('FILE_TYPE', 'PNG')
                     clear()
                     print
@@ -1338,9 +1355,6 @@ def frames ():
 
                 if formatchoice=='e':
                     clear()
-                    frametemplateformat(' -F EXR ')
-                    subframetemplateformat(' -F EXR ')
-                    #write to file
                     conf_set_param('FILE_TYPE', 'EXR')
                     clear()
                     print
@@ -1350,9 +1364,6 @@ def frames ():
 
                 if formatchoice=='j':
                     clear()
-                    frametemplateformat(' -F JPEG ')
-                    subframetemplateformat(' -F JPEG ')
-                    #write to file
                     conf_set_param('FILE_TYPE', 'JPEG')
                     print
                     print ' Changed frame format to JPEG'
@@ -1361,9 +1372,6 @@ def frames ():
 
                 if formatchoice=='t':
                     clear()
-                    frametemplateformat(' -F TIFF ')
-                    subframetemplateformat(' -F TIFF ')
-                    #write to file
                     conf_set_param('FILE_TYPE', 'TIFF')
                     clear()
                     print
@@ -1372,9 +1380,6 @@ def frames ():
                     break
 
                 if formatchoice=='f':
-                    frametemplateformat(' ')
-                    subframetemplateformat(' ')
-                    #write to file
                     conf_set_param('FILE_TYPE', 'specifiedinfile')
                     clear()
                     print
@@ -1382,20 +1387,62 @@ def frames ():
                     spacetime()
                     break
 
-# Note: Added the flag "--enable-autoexec" to the frame and subframe template.
-#       This is the equivalent of going into User Preferences, File and checking "Auto Execution: Auto Run Python Scripts".
-#       If this option is not turned on and you are using BlenRig, the armature won't run correctly (FK arms and forearms will stay completely straight).
-def frametemplateformat(newformat):
+def getfiletypeformat():
+    from os.path import expanduser
+    home = expanduser("~")
+    os.chdir(home)
+    parser = ConfigParser.ConfigParser()
+    parser.readfp(FakeSecHead(open('.brenda.conf')))
+    j = parser.get('asection', 'FILE_TYPE')
+    retvalue = ''  # j == 'specifiedinifile'
+    if j == 'PNG':
+        retvalue = '-F PNG'
+    elif j == 'EXR':
+        retvalue = '-F EXR'
+    elif j == 'JPEG':
+        format_value = '-F JPEG'
+    elif j == 'TIFF':
+        retvalue - '-F TIFF'
+    return retvalue
+
+def getblenderdirinzipfile():
+    from os.path import expanduser
+    home = expanduser("~")
+    os.chdir(home)
+    parser = ConfigParser.ConfigParser()
+    parser.readfp(FakeSecHead(open('.brenda.conf')))
+    retval = parser.get('asection', 'BLENDER_DIR_IN_ZIP_FILE')
+    if len(retval) > 0:
+        retval = retval.replace('\\', '/') # When going through the directory structure in Linux, we need to use forward slashes
+        retval = retval[1:] # Remove the initial forward slash...
+        retval += '/' # ...and append a trailing slash.
+        
+        retval = 'scenes/SEQ/010/' # TODO: REMOVE THIS!!!!!!!!!!!!! THIS IS JUST A TEST.
+    return retval
+
+def updateframetemplateformat():
+    # Updates both the regular frame template and subframe template with the current values.
+    # We need to update this any time we change the output image file format or when we upload a "good workflow" project
+    # structure (because we need to know where to start looking for a .blend file).
+    #
+    # Note that there is the flag "--enable-autoexec" on the frame and subframe template. This is the equivalent of
+    # going into Blender and selecting User Preferences -> File and checking "Auto Execution: Auto Run Python Scripts".
+    # If this option is not turned on and you are using BlenRig, the armature won't run correctly (FK arms and forearms
+    # will stay completely straight).
+
+    # Get our config files before we start digging around in directories.
+    blender_dir_in_zip_file = getblenderdirinzipfile()
+    file_type_format = getfiletypeformat()
+
+    # Update the regular frame template.
     os.chdir(DIR_BRENDA_CODE)
-    fpart = 'blender -b *.blend --enable-autoexec'
-    lpart = '-o $OUTDIR/###### -s $START -e $END -j $STEP -t 0 -a'
+    code = 'blender -b ' + blender_dir_in_zip_file + '*.blend --enable-autoexec ' + file_type_format + ' -o $OUTDIR/###### -s $START -e $END -j $STEP -t 0 -a'
     file = open("frame-template", "w")
-    file.write(fpart+newformat+lpart)
+    file.write(code)
     file.close()
 
-def subframetemplateformat(newformat):
-    os.chdir(DIR_BRENDA_CODE)
-    fpart = """cat >subframe.py <<EOF
+    # Update the subframe template.
+    code = """cat >subframe.py <<EOF
 import bpy
 bpy.context.scene.render.border_min_x = $SF_MIN_X
 bpy.context.scene.render.border_max_x = $SF_MAX_X
@@ -1403,10 +1450,9 @@ bpy.context.scene.render.border_min_y = $SF_MIN_Y
 bpy.context.scene.render.border_max_y = $SF_MAX_Y
 bpy.context.scene.render.use_border = True
 EOF
-blender -b *.blend --enable-autoexec -P subframe.py"""
-    lpart = """-o $OUTDIR/frame_######_X-$SF_MIN_X-$SF_MAX_X-Y-$SF_MIN_Y-$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a"""
+blender -b """ + blender_dir_in_zip_file + """*.blend --enable-autoexec -P subframe.py """ + file_type_format + """ -o $OUTDIR/frame_######_X-$SF_MIN_X-$SF_MAX_X-Y-$SF_MIN_Y-$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a"""
     file = open("subframe-template", "w")
-    file.write(fpart+newformat+lpart)
+    file.write(code)
     file.close()
 
 
@@ -1432,7 +1478,7 @@ class read_conf_values(object):
         self.m = parser.get('asection', 'AVAILABILITY_ZONE')
         self.n = parser.get('asection', 'FRAME_LIST_FILE')
         self.o = parser.get('asection', 'FRAME_LIST_OR_FRAME_RANGE')
-        self.p = parser.get('asection', 'REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP')
+        self.p = parser.get('asection', 'BLENDER_DIR_IN_ZIP_FILE')
 
         #create new options
         self.a_nm = 'INSTANCE_TYPE='
@@ -1450,7 +1496,7 @@ class read_conf_values(object):
         self.m_nm = 'AVAILABILITY_ZONE='
         self.n_nm = 'FRAME_LIST_FILE='
         self.o_nm = 'FRAME_LIST_OR_FRAME_RANGE='
-        self.p_nm = 'REGULAR_ZIP_OR_GOOD_WORKFLOW_ZIP='
+        self.p_nm = 'BLENDER_DIR_IN_ZIP_FILE='
         os.chdir(DIR_BRENDA_CODE)
 
 
@@ -1488,6 +1534,7 @@ def conf_set_param(paramName, paramValue):
     newconfig += compare_param_val(conf.m_nm, conf.m, paramName, paramValue)
     newconfig += compare_param_val(conf.n_nm, conf.n, paramName, paramValue)
     newconfig += compare_param_val(conf.o_nm, conf.o, paramName, paramValue)
+    newconfig += compare_param_val(conf.p_nm, conf.p, paramName, paramValue)
     confwrite(newconfig)
 
 def resetworkqueue():
@@ -1566,23 +1613,6 @@ def emptybuckets ():
     print " Files in project and frame buckets have been deleted"
     print
 
-
-def subframecreate():
-    status = os.chdir(DIR_BRENDA_CODE)
-    subframe_template_there = os.path.isfile('subframe-template')
-    if subframe_template_there == False:
-        file = open("subframe-template", "w")
-        file.write("""cat >subframe.py <<EOF
-import bpy
-bpy.context.scene.render.border_min_x = $SF_MIN_X
-bpy.context.scene.render.border_max_x = $SF_MAX_X
-bpy.context.scene.render.border_min_y = $SF_MIN_Y
-bpy.context.scene.render.border_max_y = $SF_MAX_Y
-bpy.context.scene.render.use_border = True
-EOF
-blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######_X-$SF_MIN_X-$SF_MAX_X-Y-$SF_MIN_Y-$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a""")
-        file.close()
-
 def printspotrequest(spinstype):
     spotrequest = 'python brenda-run -i '+spinstype+' price'
     status = os.system(spotrequest)
@@ -1602,7 +1632,6 @@ def timer(start):
 	if timerInput=='m':
             break
 
-subframecreate()
 toolchange()
 inidup()
 mainmenu()
