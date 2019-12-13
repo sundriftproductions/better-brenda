@@ -81,13 +81,17 @@ The idea for a "good workflow" directory structure came from Kenny Roy's "Proper
 
 Most directories are broken down into _sequences_ and _shots_. 
 
-Sequences are collections of shots. Sequences are identified by three uppercase letters (e.g. SEQ, NYC, PAR -- whatever three letters describe what's going on in the scene). Shots are identified by three numbers (e.g. 010, 020, 052, 123, 523). When creating shots, it's recommended to start at 010 and increment them by 10. That way, if it turns out that you need a new shot in between two other shots, you have a total of nine other numbers you could use in between shots, and this won't force you to restructure a lot of your project.
+Sequences are collections of shots. Sequences are identified by three uppercase letters (e.g. SEQ, NYC, PAR -- whatever three letters describe what's going on in the scene).
+
+Shots are identified by three numbers (e.g. 010, 020, 052, 123, 523). 
+
+When creating shots, it's recommended to start at 010 and increment them by 10. That way, if it turns out that you need a new shot in between two other shots, you have a total of nine other numbers you could use in between shots, and this won't force you to restructure a lot of your project.
 
 "ALL" is a reserved sequence name. When Better Brenda sees a sequence directory called "ALL", it ALWAYS pulls in everything in that directory into the zip file that gets uploaded to AWS.
 
 "not in project" is a reserved directory name. If you create a directory anywhere in your "good workflow" project structure and it's in a directory that Better Brenda searches for putting together everything in a zip file, everything in the "not in project" directory will be ignored by Better Brenda. The "not in project" directories can be used to store things like reference material that should never get uploaded to AWS.
 
-Here is the recommended directory structure. Note that any directory name followed with "(*)" is a directory that Better Brenda will search through, grab the appropriate files and directories, and zip up to send to AWS:
+Here is the recommended directory structure. Note that any directory name followed with `(*)` is a directory that Better Brenda will search through, grab the appropriate files and directories, and send to AWS:
 
 ```
 P-Project: The name of the project
@@ -181,4 +185,4 @@ It is assumed that, when you select the Blender file to upload as part of a "goo
 
 ```
 
-When you upload the Blender file from one of these directories, Better Brenda will not upload anything else in the directory -- ONLY the Blender file you have selected. It will also search through all of the directories marked with "(*)" above.
+When you upload the Blender file from one of these directories, Better Brenda will not upload anything else in the directory -- ONLY the Blender file you have selected. It will also search through all of the directories marked with `(*)` above.
