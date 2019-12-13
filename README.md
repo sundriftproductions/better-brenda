@@ -149,6 +149,10 @@ P-Project: The name of the project
 	|	|	|-> [Sequence name]
 	|	|		|-> [Shot number]
 	|	|
+	|	|-> fonts (*): Fonts that are used in a Blender scene file.
+	|	|	|-> [Sequence name]
+	|	|		|-> [Shot number]
+	|	|
 	|	|-> images (*): Images that are used in a Blender scene file.
 	|	|	|-> [Sequence name]
 	|	|		|-> [Shot number]
