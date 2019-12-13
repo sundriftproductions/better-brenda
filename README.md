@@ -177,11 +177,11 @@ P-Project: The name of the project
 
 ```
 
-It is assumed that, when you select the Blender file to upload as part of a "good workflow" directory structure, the initial blend file is located in one of these directories:
+It is assumed that, when you select the .blend file to upload as part of a "good workflow" directory structure, the file is located in one of these directories:
 
 ```
 "P-Project\2D\Blender\[Sequence name]\[Shot number]\"
 "P-Project\3D\scenes\[Sequence name]\[Shot number]\"
 ```
 
-When you upload the Blender file from one of these directories, Better Brenda will not upload anything else from the directory; it will upload _only_ the Blender file you have selected. As mentioned previously, Better Brenda will also search through all of the directories marked with `(*)` above.
+When you upload the .blend file from one of these directories, Better Brenda will not upload anything else from the directory; it will upload _only_ the .blend file you have selected. As mentioned previously, Better Brenda will also search through all of the directories marked with `(*)` above.
