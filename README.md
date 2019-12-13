@@ -43,7 +43,7 @@ If you pick the `Upload already zipped archive` option, you still must select th
 
 * **Additional options for stopping the render farm and clearing out frames:** Under `Canceling and resetting your farm`, instead of having to always enter the combination r, Enter, s, Enter, c, Enter, e, Enter to reset the work queue, stop all running instances, cancel pending spot requests, and empty frame/project buckets, there is a new option to do all of these at once. There is also an option which omits the final step of emptying the frame/project buckets.
 
-* **Additional options for selecting a frame range:** `Under Setting up your farm -> Frames`, the menu has two new options:
+* **Additional options for selecting a frame range:** Under `Setting up your farm -> Frames`, the menu has two new options:
 
 ```
 r = Use (and set) frame range
