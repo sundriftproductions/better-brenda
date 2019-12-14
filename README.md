@@ -129,6 +129,10 @@ P-Project: The name of the project
 	|	|	|	|-> [Sequence name]
 	|	|	|		|-> [Shot number]
 	|	|	|
+	|	|	|-> lighting (*): Any lighting setups used in the project.
+	|	|	|	|-> [Sequence name]
+	|	|	|		|-> [Shot number]
+	|	|	|
 	|	|	|-> models (*): Any non-rigged models used in the project.
 	|	|	|	|-> [Sequence name]
 	|	|	|		|-> [Shot number]
