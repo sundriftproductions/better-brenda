@@ -83,11 +83,11 @@ Most directories are broken down into _sequences_ and _shots_.
 
 Sequences are collections of shots. Sequences are identified by three uppercase letters (e.g. SEQ, NYC, PAR -- whatever three letters describe what's going on in the scene).
 
-Shots are identified by three numbers (e.g. 010, 020, 052, 123, 523). 
+Shots are identified by three numbers (e.g. 010, 020, 052, 123, 523), except in the case of `ALL` (explained shortly). 
 
 When creating shots, it's recommended to start at 010 and increment them by 10. That way, if it turns out that you need a new shot in between two other shots, you have a total of nine other numbers you could use in between shots, and you won't need to restructure a lot of your project.
 
-`ALL` is a reserved sequence name. When Better Brenda sees a sequence directory called `ALL`, it _always_ pulls in everything in that directory into the zip file that gets uploaded to AWS.
+`ALL` is a reserved sequence name. When Better Brenda sees a sequence directory called `ALL`, it _always_ pulls in everything in that directory into the zip file that gets uploaded to AWS. You may also use `ALL` as a shot name. Just like when you use `ALL` as a sequence name, using `ALL` as a shot name will be sent to AWS if it's part of a sequence that is also sent to AWS.
 
 `not in project` is a reserved directory name. If you create a directory anywhere in your "good workflow" project structure and it's in a directory that Better Brenda searches for putting together everything in a zip file, everything in the `not in project` directory will be ignored by Better Brenda. The `not in project` directories can be used to store things like reference material that should never get uploaded to AWS.
 
@@ -112,6 +112,10 @@ P-Project: The name of the project
 	|	|	|-> boards: Storyboards.
 	|	|	|
 	|	|	|-> comps: Final composited images.
+	|	|	|	|-> [Sequence name]
+	|	|	|		|-> [Shot number]
+	|	|	|
+	|	|	|-> mattes (*): Any mattes used in compositing.
 	|	|	|	|-> [Sequence name]
 	|	|	|		|-> [Shot number]
 	|	|	|
