@@ -356,6 +356,9 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                 # So we need to take the root and go up four directories.
                 abs_project_path = os.path.abspath(os.path.join(projfilepath + '\\..\\..\\..', os.pardir))
                 directories_to_zip = []
+                directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\mattes\\ALL\\')
+                directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\mattes\\' + sequence_name, True)
+                directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\mattes\\' + sequence_name + '\\' + shot_number)
                 directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\plates\\ALL\\')
                 directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\plates\\' + sequence_name, True)
                 directories_to_zip += get_subdirectories(abs_project_path, '2D\\images\\plates\\' + sequence_name + '\\' + shot_number)
