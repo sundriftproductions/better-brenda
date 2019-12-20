@@ -401,7 +401,9 @@ def uploadproject(projfilename, projfilepath, uploadtype):
                             for file in files:
                                 filename = os.path.join(root, file)
                                 if os.path.isfile(filename):  # regular files only
-                                    print '    Adding "' + filename + '"...'
+                                    # The next line is commented out because there can be a TON of files in the case of image sequences. Uncomment if debugging.
+                                    # print '    Adding "' + filename + '"...'
+
                                     # Note that in the next statement we're putting "project" as the top level directory
                                     # in the archive; Brenda automatically picks this as the directory. The reason for
                                     # this is because we want to tell the frame template to use our full relative path
